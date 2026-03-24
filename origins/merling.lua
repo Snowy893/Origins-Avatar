@@ -1,7 +1,9 @@
 local origins = require "origins.origins"
 
-local merling = origins:new("origins:merling")
+local merling = origins.new("origins:merling")
 
-merling.emissive = function() return player:isWet() end
+function merling.emissive()
+    return player:isWet()
+end
 
 merling:init()

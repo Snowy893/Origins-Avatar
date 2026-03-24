@@ -17,9 +17,7 @@
 /src/.vscode/plugin/plugin-debug.lua
 /.plugin.*.lua
 
-# Used for testing.
-/script.lua
-/avatar.json
+/.*
 
 # WIP
 /scripts/installer

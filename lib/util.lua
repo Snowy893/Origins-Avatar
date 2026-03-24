@@ -1,7 +1,81 @@
+---@alias Util.ArrowTick.func fun(arrow: Entity): hide: boolean?
 ---@class Util
+---@field tick function | { register: fun(self: table, func: function, ticks: integer?) }
+---@field TICK function | { register: fun(self: table, func: function, ticks: integer?) }
+---@field arrow_tick Util.ArrowTick.func | { register: fun(self: table, func: Util.ArrowTick.func, ticks: integer?) }
+---@field ARROW_TICK Util.ArrowTick.func | { register: fun(self: table, func: Util.ArrowTick.func, ticks: integer?) }
 local util = {}
 local utilmt = {}
 setmetatable(util, utilmt)
+
+local tickObjs = {}
+local arrowTickObjs = {}
+local arrows = {}
+
+utilmt.__index = setmetatable(
+    {
+        tick = {},
+        arrow_tick = {},
+    },
+    {
+        __index = function(self, key)
+            if type(key) == "string" then
+                return rawget(self, key:lower())
+            end
+        end,
+    }
+)
+
+function utilmt:__newindex(key, value)
+    local event
+    if type(key) == "string" then event = key:lower() end
+    if event and event == "tick" or event == "arrow_tick" then
+        self[event]:register(value)
+        return
+    end
+    rawset(self, key, value)
+end
+
+---@param func function
+---@param ticks integer?
+function util.tick:register(func, ticks)
+    table.insert(tickObjs, { func = func, ticks = ticks, timer = 0 })
+end
+
+---@param func fun(arrow: Entity): hide: boolean?
+---@param ticks integer?
+function util.arrow_tick:register(func, ticks)
+    table.insert(arrowTickObjs, { func = func, ticks = ticks })
+end
+
+function events.arrow_render(_, arrow)
+    local uuid = arrow:getUUID()
+    arrows[uuid] = arrows[uuid] or { timer = 0, shouldHide = false }
+    return arrows[uuid].shouldHide
+end
+
+function events.tick()
+    for _, obj in ipairs(tickObjs) do
+        obj.timer = obj.timer + 1
+        if not obj.ticks or obj.timer == obj.ticks then
+            obj.timer = 0
+            obj.func()
+        end
+    end
+    for uuid, arrow in pairs(arrows) do
+        local entity = world.getEntity(uuid)
+        if entity then
+            arrow.timer = arrow.timer + 1
+            for _, obj in ipairs(arrowTickObjs) do
+                if not obj.ticks or arrow.timer % obj.ticks == 0 then
+                    arrows[uuid].shouldHide = obj.func(entity)
+                end
+            end
+        else
+            arrows[uuid] = nil
+        end
+    end
+end
 
 ---@generic T
 ---@param func fun(value, oldValue, ...: T)

@@ -1,6 +1,8 @@
 ---v1.0.1
 
 local originsAPI = {}
+---@alias OriginPower {Type:string,Sources:string[],Data:OriginPowerData}
+---@alias OriginPowerData unknown
 
 ---Checks if the given player has the given origin.
 ---@param playr Player The Player to check
@@ -8,16 +10,17 @@ local originsAPI = {}
 ---@param originLayer? string Optionally, only return true if the origin is from this layer
 ---@return boolean
 function originsAPI.hasOrigin(playr, origin, originLayer)
-  local nbt=playr:getNbt()
-  local origins = nbt.cardinal_components and nbt.cardinal_components["origins:origin"] and
-      nbt.cardinal_components["origins:origin"].OriginLayers --[[@as {Origin:string,Layer:string} ]]
-  if not origins then return false end
-  for _, _origin in ipairs(origins) do
-    if _origin.Origin == origin and (_origin.Layer == originLayer or originLayer == nil) then
-      return true
+    local nbt = playr:getNbt()
+    local origins = nbt.cardinal_components and nbt.cardinal_components["origins:origin"] and
+        nbt.cardinal_components["origins:origin"]
+        .OriginLayers --[[@as {Origin:string,Layer:string}[] ]]
+    if not origins then return false end
+    for _, _origin in ipairs(origins) do
+        if _origin.Origin == origin and (_origin.Layer == originLayer or originLayer == nil) then
+            return true
+        end
     end
-  end
-  return false
+    return false
 end
 
 ---Checks if the given player has the given power.
@@ -26,38 +29,38 @@ end
 ---@param powerSource? string Optionally, only return true if the power has this source
 ---@return boolean
 function originsAPI.hasPower(playr, power, powerSource)
-  local nbt=playr:getNbt()
-  local powers = nbt.cardinal_components and nbt.cardinal_components["apoli:powers"] and
-      nbt.cardinal_components["apoli:powers"].Powers --[[@as {Type:string,Sources:string[],Data:unknown} ]]
-  if not powers then return false end
-  for _, _power in ipairs(powers) do
-    if _power.Type == power then
-      if not powerSource then return true end
-      for _, _source in ipairs(_power.Sources) do
-        if _source == powerSource then
-          return true
+    local nbt = playr:getNbt()
+    local powers = nbt.cardinal_components and nbt.cardinal_components["apoli:powers"] and
+        nbt.cardinal_components["apoli:powers"].Powers --[[@as OriginPower[] ]]
+    if not powers then return false end
+    for _, _power in ipairs(powers) do
+        if _power.Type == power then
+            if not powerSource then return true end
+            for _, _source in ipairs(_power.Sources) do
+                if _source == powerSource then
+                    return true
+                end
+            end
         end
-      end
     end
-  end
-  return false
+    return false
 end
 
 ---Gets the resource data from the given power.
 ---@param playr Player The Player to get the resource data from
 ---@param power string The power to get the power data from
 ---@param powerSource? string Optionally, only get the power data if the power has this source
----@return unknown?
+---@return OriginPowerData?
 function originsAPI.getPowerData(playr, power, powerSource)
-  if not originsAPI.hasPower(playr, power, powerSource) then return end
-  local nbt=playr:getNbt()
-  local powers = nbt.cardinal_components and nbt.cardinal_components["apoli:powers"] and
-      nbt.cardinal_components["apoli:powers"].Powers --[[@as {Type:string,Sources:string[],Data:unknown} ]]
-  for _, _power in ipairs(powers) do
-    if _power.Type == power then
-      return _power.Data
+    if not originsAPI.hasPower(playr, power, powerSource) then return end
+    local nbt = playr:getNbt()
+    local powers = nbt.cardinal_components and nbt.cardinal_components["apoli:powers"] and
+        nbt.cardinal_components["apoli:powers"].Powers --[[@as OriginPower[] ]]
+    for _, _power in ipairs(powers) do
+        if _power.Type == power then
+            return _power.Data
+        end
     end
-  end
 end
 
 return originsAPI
