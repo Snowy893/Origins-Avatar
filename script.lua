@@ -1,11 +1,11 @@
 -- Set this to false if you want to use the skin texture in the blockbench model!
-local useVanillaSkin = true
+local USE_VANILLA_SKIN = true
 ---------------------------------------------------------------------------------
 
 vanilla_model.PLAYER:setVisible(false)
 models.model.root:setSecondaryRenderType("NONE")
 
-if useVanillaSkin then
+if USE_VANILLA_SKIN then
     for _, part in ipairs({
         models.model.root.Head.Head,
         models.model.root.Head.Hat,
