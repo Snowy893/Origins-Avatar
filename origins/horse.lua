@@ -29,7 +29,7 @@ squapi.tails(tail,
     nil,
     0.006,
     nil,
-    80,
+    35,
     40,
     20
 )
