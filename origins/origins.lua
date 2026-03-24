@@ -13,13 +13,25 @@ function origins.new(id)
     ---@field page Page
     ---@field modelParts ModelPart[]
     ---@field emissive boolean|function
+    ---@field emissiveBuffer (integer|{ on: integer, off: integer })?
     ---@field emissiveModelParts ModelPart[]
     ---@field isOrigin boolean
     local origin = {}
     origin.id = id
-    origin.emissive = false
     origin.emissiveModelParts = { models.model.root }
     origin.isOrigin = false
+
+    local originmt = {}
+    setmetatable(origin, originmt)
+
+    local emissiveFunc
+    
+    function originmt:__newindex(key, value)
+        if key == "emissive" and type(value) == "function" then
+            emissiveFunc = value
+        end
+        rawset(self, key, value)
+    end
 
     ---@param toggle boolean
     function origin.partsVisible(toggle)
@@ -40,6 +52,57 @@ function origins.new(id)
     ---@param func fun(isOrigin: boolean)?
     function origin:init(func)
         origin.func = func
+        if origin.emissive == nil then
+            origin.emissive = false
+        elseif origin.emissiveBuffer then
+            local onBuffer
+            local offBuffer
+
+            if type(origin.emissiveBuffer) == "table" then
+                onBuffer = origin.emissiveBuffer.on
+                offBuffer = origin.emissiveBuffer.off
+            else
+                onBuffer = origin.emissiveBuffer
+                offBuffer = onBuffer
+            end
+
+            local onTimer = 0
+            local offTimer = 0
+            local wasEmissive
+
+            function self.emissive()
+                local emissive = emissiveFunc()
+
+                if wasEmissive ~= emissive then
+                    if emissive then
+                        onTimer = onTimer + 1
+                        if onTimer == onBuffer then
+                            wasEmissive = emissive
+                            onTimer = 0
+                        end
+                        offTimer = 0
+                    else
+                        offTimer = offTimer + 1
+                        if offTimer == offBuffer then
+                            wasEmissive = emissive
+                            offTimer = 0
+                        end
+                        onTimer = 0
+                    end
+                end
+
+                return wasEmissive
+            end
+
+            function events.entity_init()
+                if not self.isOrigin then return end
+
+                local emissive = emissiveFunc()
+                self.partsEmissive(emissive)
+                wasEmissive = emissive
+            end
+        end
+        
         origins.ALL[origin.id] = origin
     end
 
