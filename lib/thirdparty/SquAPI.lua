@@ -1,3 +1,4 @@
+---@diagnostic disable: redefined-local
 
 --███████╗ ██████╗ ██╗   ██╗██╗███████╗██╗  ██╗██╗   ██╗███████╗     █████╗ ██████╗ ██╗
 --██╔════╝██╔═══██╗██║   ██║██║██╔════╝██║  ██║╚██╗ ██╔╝██╔════╝    ██╔══██╗██╔══██╗██║
@@ -824,6 +825,8 @@ function squapi.floatPoint.new(element, xoffset, yoffset, zoffset, stiffness, bo
 	self.active = not self.active
   end
 
+  local point = {}
+
   function events.render(delta, context) --rendering always running
 		if self.init then
 			self.point[1].pos = player:getPos()[1]*16 + self.x
@@ -981,7 +984,7 @@ function squapi.smoothHead(element, tilt, strength, keeporiginalheadpos)
 	assert(element,
 	"§4Your model path for smoothHead is incorrect.§c")
 	strength = strength or 1
-	tilt = tilt or 1/10
+	tilt = tilt or (1/10)
 	if keeporiginalheadpos == nil then keeporiginalheadpos = true end
 	local mainheadrot = vec(0, 0, 0)
 	local offset = vec(0,0,0)
@@ -1490,7 +1493,7 @@ end
 
 -- returns how fast the player moves forward, negative means backward
 function squapi.getForwardVel()
-	return player:getVelocity():dot((player:getLookDir().x_z):normalize())
+	return player:getVelocity():dot((player:getLookDir().x_z):normalize()) ---@diagnostic disable-line: param-type-mismatch
 end
 
 -- returns y velocity
