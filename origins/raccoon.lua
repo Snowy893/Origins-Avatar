@@ -1,6 +1,5 @@
 local origins = require "origins.origins"
 local squapi = require "lib.thirdparty.SquAPI"
-local util = require "lib.util"
 
 local raccoon = origins.new("snowy:raccoon")
 
@@ -8,6 +7,7 @@ local ears = models.model.root.Head.raccoonEars
 local tail = models.model.root.Body.raccoonTail
 
 raccoon.modelParts = { ears, tail }
+raccoon.armorParts = { [6] = { ears } }
 
 squapi.ear(ears.raccoonRightEar, ears.raccoonLeftEar,
     true,

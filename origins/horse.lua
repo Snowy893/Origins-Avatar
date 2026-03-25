@@ -7,6 +7,7 @@ local ears = models.model.root.Head.horseEars
 local tail = models.model.root.Body.horseTail
 
 horse.modelParts = { ears, tail }
+horse.armorParts = { [6] = { ears } }
 
 squapi.ear(ears.horseLeftEar, ears.horseRightEar,
     true,

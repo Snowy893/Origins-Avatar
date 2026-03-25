@@ -13,6 +13,7 @@ function origins.new(id)
     ---@class Origin
     ---@field page Page
     ---@field modelParts ModelPart[]
+    ---@field armorParts { [Entity.slot]: ModelPart[] }
     ---@field emissive boolean|fun(): boolean
     ---@field emissiveBuffer (integer|0|{ on: integer, off: integer })?
     ---@field emissiveModelParts ModelPart[]
@@ -42,6 +43,15 @@ function origins.new(id)
         if not origin.modelParts then return end
         for _, part in ipairs(origin.modelParts) do
             part:setVisible(toggle)
+        end
+    end
+
+    function origin.checkArmorParts()
+        if not origin.armorParts then return end
+        for slot, parts in pairs(origin.armorParts) do
+            for _, part in ipairs(parts) do
+                part:setVisible(player:getItem(slot).id == "minecraft:air")
+            end
         end
     end
 
@@ -149,6 +159,8 @@ function events.tick()
                 end
                 origin.wasEmissive = emissive
             end
+
+            origin.checkArmorParts()
         end
 
         if origin.tick then origin.tick() end
