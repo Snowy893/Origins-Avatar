@@ -30,8 +30,8 @@ squapi.tails(tail,
     0.006,
     nil,
     35,
-    40,
-    20
+    -0.5,
+    nil
 )
 
 horse:init()
