@@ -6,8 +6,6 @@ blazeborn.sound = {
     obj = sounds["minecraft:entity.blaze.burn"],
 }
 
-blazeborn.emissiveBuffer = 0
-
 function blazeborn.emissive()
     return player:isOnFire()
 end

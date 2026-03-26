@@ -13,7 +13,7 @@ function origins.new(id)
     ---@class Origin
     ---@field page Page
     ---@field modelParts ModelPart[]
-    ---@field armorParts { [Entity.slot]: ModelPart[] }
+    ---@field armorParts { [Entity.slot]: { [integer|Minecraft.itemID]: ModelPart } }
     ---@field emissive boolean|fun(): boolean
     ---@field emissiveBuffer (integer|0|{ on: integer, off: integer })?
     ---@field emissiveModelParts ModelPart[]
@@ -24,7 +24,6 @@ function origins.new(id)
     origin.id = id
     origin.emissiveModelParts = { models.model.root }
     origin.isOrigin = false
-    origin.emissiveBuffer = 100
 
     local originmt = {}
     setmetatable(origin, originmt)
@@ -39,7 +38,7 @@ function origins.new(id)
     end
 
     ---@param toggle boolean
-    function origin.partsVisible(toggle)
+    function origin.setPartsVisible(toggle)
         if not origin.modelParts then return end
         for _, part in ipairs(origin.modelParts) do
             part:setVisible(toggle)
@@ -49,14 +48,15 @@ function origins.new(id)
     function origin.checkArmorParts()
         if not origin.armorParts then return end
         for slot, parts in pairs(origin.armorParts) do
-            for _, part in ipairs(parts) do
-                part:setVisible(player:getItem(slot).id == "minecraft:air")
+            for k, part in pairs(parts) do
+                local item = type(k) == "number" and "minecraft:air" or k
+                part:setVisible(player:getItem(slot).id:find(item) ~= nil)
             end
         end
     end
 
     ---@param toggle boolean
-    function origin.partsEmissive(toggle)
+    function origin.setPartsEmissive(toggle)
         local renderType = toggle and "EYES" or "NONE"
         for _, part in ipairs(origin.emissiveModelParts) do
             part:setSecondaryRenderType(renderType)
@@ -64,15 +64,16 @@ function origins.new(id)
     end
 
     function origin:init()
-
         if origin.sound then
             origin.sound.minTicks = origin.sound.minTicks or 600
             origin.sound.maxTicks = origin.sound.maxTicks or 1200
             local pitch = origin.sound.obj:getPitch()
+            local min = pitch * 0.5
+            local max = pitch * 2
 
             periodical.new(function()
                 origin.sound.obj:stop()
-                origin.sound.obj:pitch(math.random(pitch - 0.1, pitch + 0.1))
+                origin.sound.obj:pitch(math.random(min, max))
                 origin.sound.obj:pos(player:getPos())
                 origin.sound.obj:play()
             end):condition(function()
@@ -103,14 +104,14 @@ function origins.new(id)
                 if wasEmissive ~= emissive then
                     if emissive then
                         onTimer = onTimer + 1
-                        if onTimer == onBuffer then
+                        if onTimer == onBuffer or onBuffer == 0 then
                             wasEmissive = emissive
                             onTimer = 0
                         end
                         offTimer = 0
                     else
                         offTimer = offTimer + 1
-                        if offTimer == offBuffer then
+                        if offTimer == offBuffer or offBuffer == 0 then
                             wasEmissive = emissive
                             offTimer = 0
                         end
@@ -125,7 +126,7 @@ function origins.new(id)
                 if not origin.isOrigin then return end
 
                 local emissive = emissiveFunc()
-                origin.partsEmissive(emissive)
+                origin.setPartsEmissive(emissive)
                 wasEmissive = emissive
             end
         end
@@ -143,8 +144,8 @@ function events.tick()
         if origin.wasOrigin ~= origin.isOrigin then
             local emissive = origin.isOrigin and origin.emissive and type(origin.emissive) == "boolean"
 
-            origin.partsVisible(origin.isOrigin)
-            origin.partsEmissive(emissive)
+            origin.setPartsVisible(origin.isOrigin)
+            origin.setPartsEmissive(emissive)
 
             if origin.isOrigin and origin.page then
                 action_wheel:setPage(origin.page)
@@ -155,7 +156,7 @@ function events.tick()
             if type(origin.emissive) == "function" then
                 local emissive = origin.emissive()
                 if origin.wasEmissive ~= emissive then
-                    origin.partsEmissive(emissive)
+                    origin.setPartsEmissive(emissive)
                 end
                 origin.wasEmissive = emissive
             end

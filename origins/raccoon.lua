@@ -34,4 +34,3 @@ squapi.tails(tail,
 )
 
 raccoon:init()
-
