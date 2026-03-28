@@ -12,8 +12,8 @@ origins.ALL = {}
 function origins.new(id)
     ---@class Origin
     ---@field page Page
-    ---@field modelParts ModelPart[]
-    ---@field armorParts { [Entity.slot]: { [integer|Minecraft.itemID]: ModelPart } }
+    ---@field parts ModelPart[]
+    ---@field partsToHide { [Entity.slot]: { [integer|Minecraft.itemID]: ModelPart } }
     ---@field emissive boolean|fun(): boolean
     ---@field emissiveBuffer (integer|0|{ on: integer, off: integer })?
     ---@field emissiveModelParts ModelPart[]
@@ -39,18 +39,19 @@ function origins.new(id)
 
     ---@param toggle boolean
     function origin.setPartsVisible(toggle)
-        if not origin.modelParts then return end
-        for _, part in ipairs(origin.modelParts) do
+        if not origin.parts then return end
+        for _, part in ipairs(origin.parts) do
             part:setVisible(toggle)
         end
     end
 
     function origin.checkArmorParts()
-        if not origin.armorParts then return end
-        for slot, parts in pairs(origin.armorParts) do
+        if not origin.partsToHide then return end
+        for slot, parts in pairs(origin.partsToHide) do
+            local item = player:getItem(slot)
+            local isWearing = item.id ~= "minecraft:air"
             for k, part in pairs(parts) do
-                local item = type(k) == "number" and "minecraft:air" or k
-                part:setVisible(player:getItem(slot).id:find(item) ~= nil)
+                part:setVisible(not (type(k) ~= "string" and isWearing or item.id:find(k) ~= nil))
             end
         end
     end

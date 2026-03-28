@@ -5,9 +5,10 @@ local horse = origins.new("snowy:horse")
 
 local ears = models.model.root.Head.horseEars
 local tail = models.model.root.Body.horseTail
+local helmet = 6 ---@type Entity.slot
 
-horse.modelParts = { ears, tail }
-horse.armorParts = { [6] = { ears } }
+horse.parts = { ears, tail }
+horse.partsToHide = { [helmet] = { ears } }
 
 squapi.ear(ears.horseLeftEar, ears.horseRightEar,
     true,

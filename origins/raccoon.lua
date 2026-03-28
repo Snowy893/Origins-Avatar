@@ -5,9 +5,10 @@ local raccoon = origins.new("snowy:raccoon")
 
 local ears = models.model.root.Head.raccoonEars
 local tail = models.model.root.Body.raccoonTail
+local helmet = 6 ---@type Entity.slot
 
-raccoon.modelParts = { ears, tail }
-raccoon.armorParts = { [6] = { ears } }
+raccoon.parts = { ears, tail }
+raccoon.partsToHide = { [helmet] = { ears } }
 
 squapi.ear(ears.raccoonRightEar, ears.raccoonLeftEar,
     true,
@@ -26,7 +27,7 @@ squapi.tails(tail,
     nil,
     nil,
     nil,
-    nil,
+    25,
     nil,
     0.006,
     nil,
