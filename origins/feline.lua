@@ -32,13 +32,28 @@ feline.variants.ginger = {
     textureParts = {
         {
             part = ears,
-            texture = textures[earsTexture.."ginger"],
+            texture = textures[earsTexture.."red"],
         },
         {
             part = tail,
-            texture = textures[tailTexture.."ginger"],
+            texture = textures[tailTexture.."red"],
         },
     }
+}
+
+feline.variants.white = {
+    name = "White",
+    item = "minecraft:white_wool",
+    textureParts = {
+        {
+            part = ears,
+            texture = textures[earsTexture.."white"]
+        },
+        {
+            part = ears,
+            texture = textures[tailTexture.."white"]
+        },
+    },
 }
 
 feline.squishy = {
