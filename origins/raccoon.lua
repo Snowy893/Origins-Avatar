@@ -8,7 +8,7 @@ local tail = models.model.root.Body.raccoonTail
 local helmet = 6 ---@type Entity.slot
 
 raccoon.parts = { ears, tail }
-raccoon.partsToHide = { [helmet] = { ears } }
+raccoon.partsCoveredByArmor = { [helmet] = { ears } }
 
 squapi.ear(ears.raccoonRightEar, ears.raccoonLeftEar,
     true,

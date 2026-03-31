@@ -3,9 +3,10 @@ local util = require "lib.util"
 
 local moth = origins.new("snowy:moth")
 
-local wings = models.model.root.Body.MothWings
+local wings = models.model.root.Body.mothWings
+local fluff = models.model.root.Head.mothFluff
 
-moth.armorParts = { [5] = { ["minecraft:elytra"] = wings } }
+-- moth.partsToHide = { [5] = { ["minecraft:elytra"] = wings } }
 
 moth.emissiveBuffer = 100
 

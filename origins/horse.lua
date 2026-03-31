@@ -8,7 +8,7 @@ local tail = models.model.root.Body.horseTail
 local helmet = 6 ---@type Entity.slot
 
 horse.parts = { ears, tail }
-horse.partsToHide = { [helmet] = { ears } }
+horse.partsCoveredByArmor = { [helmet] = { ears } }
 
 squapi.ear(ears.horseLeftEar, ears.horseRightEar,
     true,

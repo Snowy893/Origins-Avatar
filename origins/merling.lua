@@ -1,12 +1,11 @@
 local origins = require "origins.origins"
-local util = require "lib.util"
 
-local merling = origins.new("origins:merling")
+local merling = origins.new("merling")
 
-merling.emissiveBuffer = 100
+merling.emissiveBuffer = 60
 
 function merling.emissive()
-    return player:isInRain() or player:isInWater() and world.getBlockState(util.eyePos(player)).id == "minecraft:water"
+    return player:isWet()
 end
 
 merling:init()

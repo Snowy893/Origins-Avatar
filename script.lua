@@ -1,11 +1,16 @@
--- Set this to false if you want to use the skin texture in the blockbench model!
+local util = require "lib.util"
+---------------------------------------------------------------------------------
 
+-- Set this to false if you want to use the skin texture in the blockbench model.
 local USE_VANILLA_SKIN = true
+
+-- Set this to false if you want to disable your origin's ambient particles in first person.
+util.RENDER_AMBIENT_FIRST_PERSON = true
 
 ---------------------------------------------------------------------------------
 
 vanilla_model.PLAYER:setVisible(false)
-models.model.root:setSecondaryRenderType("NONE")
+models.model.root:setSecondaryRenderType("EYES")
 
 if not USE_VANILLA_SKIN then return end
 

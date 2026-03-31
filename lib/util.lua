@@ -221,13 +221,13 @@ end
 function util.switchPageActions(fromPage, toPage, title, item)
     return
         fromPage:newAction()
-        :title(title)
-        :item(item)
-        :setOnLeftClick(function() action_wheel:setPage(toPage) end),
+            :title(title)
+            :item(item)
+            :setOnLeftClick(function() action_wheel:setPage(toPage) end),
         toPage:newAction()
-        :title("Back")
-        :item("minecraft:barrier")
-        :setOnLeftClick(function() action_wheel:setPage(fromPage) end)
+            :title("Back")
+            :item("minecraft:barrier")
+            :setOnLeftClick(function() action_wheel:setPage(fromPage) end)
 end
 
 ---@param playr Player?
@@ -301,6 +301,7 @@ end
 
 ---@param direction Vector3
 ---@return Vector3
+---@nodiscard
 function util.directionToEuler(direction)
     local yaw = math.atan2(direction.x, direction.z)
     local pitch = math.atan2(direction.y, direction.xz:length())
@@ -309,6 +310,7 @@ end
 
 ---@param direction Vector3
 ---@return Vector3
+---@nodiscard
 function util.directionToEulerDegree(direction)
     local yaw = math.atan2(direction.x, direction.z)
     local pitch = math.atan2(direction.y, direction.xz:length())
@@ -319,6 +321,7 @@ end
 ---@param x any
 ---@param y any
 ---@param z any
+---@nodiscard
 function util.realRotToModelRot(x, y, z)
     local rot = type(x) == "Vector3" and x or vec(x, y, z)
     return vec(0, 180, 0) - rot
@@ -330,10 +333,11 @@ end
 ---(1.20.5 and above formats it as `"<namespace>:<name>"`)
 ---@param effect string
 ---@return Minecraft.effectID
+---@nodiscard
 function util.getEffect(effect)
     local id = effect
     if effect:find(":", 2) then
-        local namespace, name = effect:match("(.*)%:(.*)")
+        local namespace, name = effect:match("^(.-):?([^:]+)$")
         id = "effect." .. namespace .. "." .. name
     end
     return id
@@ -341,6 +345,7 @@ end
 
 ---@param ticks integer
 ---@return fun(time: integer): boolean
+---@nodiscard
 function util.createTimer(ticks)
     local lastTime = 0
     return function(time)
@@ -351,9 +356,70 @@ function util.createTimer(ticks)
 end
 
 ---@return boolean
+---@nodiscard
 function util.isNight()
     local time = world.getDayTime()
     return time >= 13000 and time <= 23000
+end
+
+---@param sound Sound
+---@param position Vector3?
+---@param noRandomPitch boolean?
+function util.playSound(sound, position, noRandomPitch)
+    local pitch = noRandomPitch and 0 or math.random(-0.5, 1)
+    local pos = position or player:getPos()
+    sound:stop()
+    sound:pitch(pitch)
+    sound:pos(pos)
+    sound:play()
+end
+
+util.RENDER_AMBIENT_FIRST_PERSON = false
+
+---@alias Util.AmbientParticle {
+---     id: Minecraft.particleID,
+---     rate: number,
+---     radius: number,
+---     offset: Vector3?,
+---     velocity: number?,
+---     condition: (fun(): boolean)?,
+---     countLeft: 0,
+---}
+
+---@type Util.AmbientParticle[]
+local ambients = {}
+
+---@param particle Util.AmbientParticle
+---@return Util.AmbientParticle
+function util.newAmbientParticles(particle)
+    particle.offset = particle.offset or vec(0, 1, 0)
+    particle.velocity = particle.velocity or 0.5
+    particle.condition = particle.condition or world.exists
+    particle.countLeft = 0
+    table.insert(ambients, particle)
+    return particle
+end
+
+function util.tick()
+    if not util.RENDER_AMBIENT_FIRST_PERSON and renderer:isFirstPerson() then return end
+    for _, ambient in ipairs(ambients) do
+        if ambient.condition() then
+            ambient.countLeft = ambient.countLeft + ambient.rate / 20
+            while ambient.countLeft > 0 do
+                ambient.countLeft = ambient.countLeft - 1
+                local pos = player:getPos():add(ambient.offset):add(
+                    math.lerp(-ambient.radius, ambient.radius, math.random()),
+                    math.lerp(-ambient.radius, ambient.radius, math.random()),
+                    math.lerp(-ambient.radius, ambient.radius, math.random())
+                )
+                particles:newParticle(ambient.id, pos, 
+                    math.lerp(-ambient.velocity, ambient.velocity, math.random()),
+                    math.lerp(-ambient.velocity, ambient.velocity, math.random()),
+                    math.lerp(-ambient.velocity, ambient.velocity, math.random())
+                )
+            end
+        end
+    end
 end
 
 return util
