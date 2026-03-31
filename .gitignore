@@ -13,7 +13,6 @@
 # Plugin dev files. Due to how the installer works, these must be ignored.
 # If you want these files, ask me.
 /log
-/src/.vscode/plugin/docs
 /src/.vscode/plugin/plugin-debug.lua
 /.plugin.*.lua
 

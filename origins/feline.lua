@@ -41,28 +41,29 @@ feline.variants.ginger = {
     }
 }
 
-squapi.ear(ears.felineRightEar, ears.felineLeftEar,
-    true,
-    1000,
-    0.1,
-    false,
-    0.25,
-    0.08,
-    0.95
-)
-
-squapi.tails({ tail, tail.felineTail2 },
-    0.75,
-    nil,
-    nil,
-    nil,
-    nil,
-    nil,
-    0,
-    nil,
-    nil,
-    nil,
-    60
-)
+feline.squishy = {
+    squapi.ear:new(ears.felineLeftEar, ears.felineRightEar,
+        0.1,
+        false,
+        0.25,
+        true,
+        1000,
+        0.08,
+        0.95
+    ),
+    squapi.tail:new({ tail, tail.felineTail2 },
+        nil,
+        nil,
+        nil,
+        nil,
+        nil,
+        nil,
+        nil,
+        nil,
+        nil,
+        nil,
+        60
+    ),
+}
 
 feline:init()

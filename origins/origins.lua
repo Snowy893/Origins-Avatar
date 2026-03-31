@@ -35,6 +35,7 @@ end
 ---@param id string If no namespace is provided, assumes `"origins:<id>"`
 ---@return Origin
 function origins.new(id)
+    ---@generic T
     ---@class Origin
     ---@field page Page
     ---@field parts ModelPart[]
@@ -47,6 +48,7 @@ function origins.new(id)
     ---@field tick fun()?
     ---@field change fun(toggle: boolean)?
     ---@field variants { [string]: Origins.Variant }?
+    ---@field squishy SquAPI<T>[]
     local origin = {}
     origin.id = getOriginID(id)
     origin.isOrigin = false
@@ -90,6 +92,30 @@ function origins.new(id)
         local renderType = toggle and "EYES" or "NONE"
         for _, part in ipairs(origin.emissiveModelParts) do
             part:setSecondaryRenderType(renderType)
+        end
+    end
+
+    ---@param toggle boolean
+    function origin.squishyToggle(toggle)
+        if not origin.squishy then return end
+        for _, obj in ipairs(origin.squishy) do
+            obj:setEnabled(toggle) ---@diagnostic disable-line: undefined-field
+        end
+    end
+
+    function origin.squishyTick()
+        if not origin.squishy then return end
+        for _, obj in ipairs(origin.squishy) do
+            if obj.tick then obj:tick() end ---@diagnostic disable-line: undefined-field
+        end
+    end
+
+    ---@param delta number
+    ---@param context Event.Render.context
+    function origin.squishyRender(delta, context)
+        if not origin.squishy then return end
+        for _, obj in ipairs(origin.squishy) do
+            if obj.render then obj:render(delta, context) end ---@diagnostic disable-line: undefined-field
         end
     end
 
@@ -244,6 +270,7 @@ function util.tick()
 
             origin.setPartsVisible(origin.isOrigin)
             origin.setPartsEmissive(emissive)
+            origin.squishyToggle(origin.isOrigin)
 
             if origin.isOrigin then
                 action_wheel:setPage(origin.page)
@@ -267,13 +294,23 @@ function util.tick()
                 util.playSound(origin.sounds.hurt)
             end
 
+            origin.squishyTick()
+
             if origin.tick then origin.tick() end
-        end        
+        end
 
         origin.wasOrigin = origin.isOrigin
     end
 
     lastHealth = health
+end
+
+function events.render(delta, context)
+    for _, origin in pairs(origins.ALL) do
+        if origin.isOrigin then
+            origin.squishyRender(delta, context)
+        end
+    end
 end
 
 return origins
