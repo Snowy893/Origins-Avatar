@@ -32,6 +32,39 @@ end
 ---     item: ItemStack|Minecraft.itemID,
 ---}
 
+---@param originID string
+---@param variantID string
+---@param lastVariantID string
+function pings.setVariant(originID, variantID, lastVariantID)
+    local origin = origins.ALL[originID]
+    if lastVariantID then
+        local last = origin.variants[lastVariantID]
+        if last.parts then
+            for _, part in ipairs(last.parts) do
+                part:setVisible(false)
+            end
+        end
+        if last.textureParts then
+            for _, obj in ipairs(last.textureParts) do
+                obj.part:setVisible(false)
+            end
+        end
+    end
+    local variant = origin.variants[variantID]
+    if variant.parts then
+        for _, part in ipairs(variant.parts) do
+            part:setVisible(true)
+        end
+    end
+    if variant.textureParts then
+        for _, obj in ipairs(variant.textureParts) do
+            obj.part:setVisible(true)
+            obj.part:setPrimaryTexture("CUSTOM", obj.texture)
+        end
+    end
+    origin.lastVariant = variantID
+end
+
 ---@param id string If no namespace is provided, assumes `"origins:<id>"`
 ---@return Origin
 function origins.new(id)
@@ -193,47 +226,23 @@ function origins.new(id)
 
         local lastVariant
 
-        ---@param variantID string
-        function pings.setVariant(variantID, lastVariantID)
-            if lastVariantID then
-                local last = origin.variants[lastVariantID]
-                if last.parts then
-                    for _, part in ipairs(last.parts) do
-                        part:setVisible(false)
-                    end
-                end
-                if last.textureParts then
-                    for _, obj in ipairs(last.textureParts) do
-                        obj.part:setVisible(false)
-                    end
-                end
-            end
-            local variant = origin.variants[variantID]
-            if variant.parts then
-                for _, part in ipairs(variant.parts) do
-                    part:setVisible(true)
-                end
-            end
-            if variant.textureParts then
-                for _, obj in ipairs(variant.textureParts) do
-                    obj.part:setVisible(true)
-                    obj.part:setPrimaryTexture("CUSTOM", obj.texture)
-                end
-            end
-            lastVariant = variantID
-        end
-
         for k, variant in pairs(origin.variants) do
             variantActionWheel:newAction()
                 :title(variant.name)
                 :item(variant.item)
                 :onLeftClick(function()
-                    pings.setVariant(k, lastVariant)
+                    pings.setVariant(origin.id, k, lastVariant)
                     config:save(origin.id.."_current_variant", k)
                 end)
         end
 
-        pings.setVariant(currentVariant, lastVariant)
+        pings.setVariant(origin.id, currentVariant, lastVariant)
+
+        util.tick:register(function()
+            if origin.isOrigin then
+                pings.setVariant(origin.id, currentVariant, lastVariant)
+            end
+        end, 120)
     end
 
     function origin:init()
