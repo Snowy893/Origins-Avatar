@@ -4,7 +4,7 @@ local util = require "lib.util"
 local blazeborn = origins.new("blazeborn")
 
 blazeborn.sounds.ambient = {
-    obj = sounds["minecraft:entity.blaze.burn"],
+    sound = sounds["minecraft:entity.blaze.burn"],
 }
 
 blazeborn.sounds.hurt = sounds["minecraft:entity.blaze.hurt"]

@@ -7,6 +7,12 @@ local ears = models.model.root.Head.horseEars
 local tail = models.model.root.Body.horseTail
 local helmet = 6 ---@type Entity.slot
 
+horse.sounds.ambient = {
+    sound = sounds["minecraft:entity.horse.ambient"],
+}
+
+horse.sounds.hurt = sounds["minecraft:entity.horse.hurt"]
+
 horse.parts = { ears, tail }
 horse.partsCoveredByArmor = { [helmet] = { ears } }
 

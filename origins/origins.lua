@@ -14,7 +14,7 @@ local function getOriginID(id)
 end
 
 ---@alias Origins.AmbientSound {
----     obj: Sound,
+---     sound: Sound,
 ---     minTicks: integer?,
 ---     maxTicks: integer?,
 ---     condition: (fun(): boolean)?,
@@ -159,7 +159,7 @@ function origins.new(id)
         ambient.condition = ambient.condition or world.exists
 
         periodical.new(function()
-            util.playSound(ambient.obj)
+            util.playSound(ambient.sound)
         end):condition(function()
             return origin.isOrigin and ambient.condition()
         end):timing(ambient.minTicks, ambient.maxTicks)
