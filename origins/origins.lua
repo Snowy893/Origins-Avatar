@@ -8,11 +8,14 @@ local origins = {}
 
 origins.ALL = {}
 
-local currentOrigin
-
----@param id string
-local function getOriginID(id)
-    return not id:find(":", 2) and "origins:"..id or id
+---@return Origin?
+local function getCurrentOrigin()
+    local nbt = player:getNbt()
+    local layers = nbt.cardinal_components
+        and nbt.cardinal_components["origins:origin"]
+        and nbt.cardinal_components["origins:origin"].OriginLayers
+    local origin = layers[1].Origin
+    return origins.ALL[origin]
 end
 
 ---@alias Origins.AmbientSound {
@@ -36,7 +39,7 @@ end
 
 ---@param variantID string
 function pings.setVariant(variantID)
-    local origin = currentOrigin
+    local origin = origins.current
     if origin.lastVariant then
         local last = origin.variants[origin.lastVariant]
         if last.parts then
@@ -76,14 +79,13 @@ function origins.new(id)
     ---@field emissive boolean|fun(): boolean
     ---@field emissiveBuffer (integer|0|{ on: integer, off: integer })?
     ---@field emissiveModelParts ModelPart[]
-    ---@field isOrigin boolean
     ---@field sounds { ambient: Origins.AmbientSound?, hurt: Sound? }
     ---@field tick fun()?
     ---@field change fun(toggle: boolean)?
     ---@field variants { [string]: Origins.Variant }?
     ---@field squishy SquAPI<T>[]
     local origin = {}
-    origin.id = getOriginID(id)
+    origin.id = not id:find(":", 2) and "origins:" .. id or id
     origin.isOrigin = false
     origin.emissiveModelParts = { models.model.root }
     origin.sounds = {}
@@ -254,63 +256,86 @@ function origins.new(id)
 end
 
 local lastHealth = 20
+
+function events.entity_init()
+    for _, origin in pairs(origins.ALL) do
+        origin.setPartsVisible(false)
+        origin.setPartsEmissive(false)
+    end
+end
+log("...")
 function util.tick()
+    origins.current = getCurrentOrigin()
+    local origin = origins.current
+
+    if not origin then
+        if origins.last then
+            origins.last.setPartsVisible(false)
+            origins.last.setPartsEmissive(false)
+            if origins.last.change then
+                origins.last.change(false)
+            end
+        end
+        origins.last = origin
+        return
+    end
+
     local health = player:getHealth()
     local wasHurt = lastHealth > health
 
-    for _, origin in pairs(origins.ALL) do
-        origin.isOrigin = originsapi.hasOrigin(player, origin.id)
-
-        if origin.wasOrigin ~= origin.isOrigin then
-            if origin.isOrigin and origin.currentVariant then pings.setVariant(origin.currentVariant) end
-
-            wasHurt = false
-
-            local emissive = origin.isOrigin and origin.emissive and type(origin.emissive) == "boolean"
-
-            origin.setPartsVisible(origin.isOrigin)
-            origin.setPartsEmissive(emissive)
-
-            if origin.isOrigin then
-                action_wheel:setPage(origin.page)
+    if origin ~= origins.last then
+        if origins.last then
+            origins.last.setPartsVisible(false)
+            origins.last.setPartsEmissive(false)
+            if origins.last.change then
+                origins.last.change(false)
             end
-
-            if origin.change then origin.change(origin.isOrigin) end
         end
 
-        if origin.isOrigin then
-            currentOrigin = origin
-
-            if type(origin.emissive) == "function" then
-                local emissive = origin.emissive()
-                if origin.wasEmissive ~= emissive then
-                    origin.setPartsEmissive(emissive)
-                end
-                origin.wasEmissive = emissive
-            end
-
-            origin.checkArmorParts()
-
-            if wasHurt and origin.sounds.hurt then
-                util.playSound(origin.sounds.hurt)
-            end
-
-            origin.squishyTick()
-
-            if origin.tick then origin.tick() end
+        if origin.currentVariant then
+            pings.setVariant(origin.currentVariant)
         end
 
-        origin.wasOrigin = origin.isOrigin
+        wasHurt = false
+        
+        if origin.emissive and type(origin.emissive) == "boolean" then
+            origin.setPartsEmissive(true)
+        end
+
+        origin.setPartsVisible(true)
+
+        action_wheel:setPage(origin.page)
+
+        if origin.change then
+            origin.change(true)
+        end
     end
 
+    if type(origin.emissive) == "function" then
+        local emissive = origin.emissive()
+        if origin.wasEmissive ~= emissive then
+            origin.setPartsEmissive(emissive)
+        end
+        origin.wasEmissive = emissive
+    end
+
+    origin.checkArmorParts()
+
+    if wasHurt and origin.sounds.hurt then
+        util.playSound(origin.sounds.hurt)
+    end
+
+    origin.squishyTick()
+
+    if origin.tick then origin.tick() end
+
     lastHealth = health
+    origins.last = origin
 end
 
 function events.render(delta, context)
-    for _, origin in pairs(origins.ALL) do
-        if origin.isOrigin then
-            origin.squishyRender(delta, context)
-        end
+    if origins.current then
+        origins.current.squishyRender(delta, context)
     end
 end
 
