@@ -10,7 +10,7 @@ local tail = models.model.root.Body.felineTail
 local tailTexture = "textures.feline.feline_tail_"
 
 feline.sounds.ambient = {
-    sound = sounds["minecraft:entity.cat.ambient"],
+    sound = sounds["minecraft:entity.cat.ambient"]:setPitch(0.5),
 }
 
 feline.sounds.hurt = sounds["minecraft:entity.cat.hurt"]
@@ -32,7 +32,7 @@ feline.variants.black = {
     },
 }
 
-feline.variants.ginger = {
+feline.variants.red = {
     name = "Ginger",
     item = "minecraft:orange_wool",
     textureParts = {
@@ -56,7 +56,7 @@ feline.variants.white = {
             texture = textures[earsTexture.."white"]
         },
         {
-            part = ears,
+            part = tail,
             texture = textures[tailTexture.."white"]
         },
     },

@@ -1,12 +1,14 @@
 local originsapi = require "lib.thirdparty.OriginsAPI"
 local periodical = require "lib.periodical"
-local util       = require "lib.util"
+local util = require "lib.util"
 
 ---@class Origins
 ---@field ALL { [string]: Origin }
 local origins = {}
 
 origins.ALL = {}
+
+local currentOrigin
 
 ---@param id string
 local function getOriginID(id)
@@ -32,13 +34,11 @@ end
 ---     item: ItemStack|Minecraft.itemID,
 ---}
 
----@param originID string
 ---@param variantID string
----@param lastVariantID string
-function pings.setVariant(originID, variantID, lastVariantID)
-    local origin = origins.ALL[originID]
-    if lastVariantID then
-        local last = origin.variants[lastVariantID]
+function pings.setVariant(variantID)
+    local origin = currentOrigin
+    if origin.lastVariant then
+        local last = origin.variants[origin.lastVariant]
         if last.parts then
             for _, part in ipairs(last.parts) do
                 part:setVisible(false)
@@ -128,14 +128,6 @@ function origins.new(id)
         end
     end
 
-    ---@param toggle boolean
-    function origin.squishyToggle(toggle)
-        if not origin.squishy then return end
-        for _, obj in ipairs(origin.squishy) do
-            obj:setEnabled(toggle) ---@diagnostic disable-line: undefined-field
-        end
-    end
-
     function origin.squishyTick()
         if not origin.squishy then return end
         for _, obj in ipairs(origin.squishy) do
@@ -215,32 +207,29 @@ function origins.new(id)
             util.switchPageActions(origin.page, variantActionWheel)
         end
 
-        local currentVariant = config:load(origin.id.."_current_variant")
+        origin.currentVariant = config:load(origin.id.."_current_variant")
 
-        if not currentVariant then
+        if not origin.currentVariant then
             for k, _ in pairs(origin.variants) do
-                currentVariant = k
+                origin.currentVariant = k
                 break
             end
         end
-
-        local lastVariant
 
         for k, variant in pairs(origin.variants) do
             variantActionWheel:newAction()
                 :title(variant.name)
                 :item(variant.item)
                 :onLeftClick(function()
-                    pings.setVariant(origin.id, k, lastVariant)
+                    pings.setVariant(k)
                     config:save(origin.id.."_current_variant", k)
+                    origin.currentVariant = k
                 end)
         end
 
-        pings.setVariant(origin.id, currentVariant, lastVariant)
-
         util.tick:register(function()
             if origin.isOrigin then
-                pings.setVariant(origin.id, currentVariant, lastVariant)
+                pings.setVariant(origin.currentVariant)
             end
         end, 120)
     end
@@ -273,13 +262,14 @@ function util.tick()
         origin.isOrigin = originsapi.hasOrigin(player, origin.id)
 
         if origin.wasOrigin ~= origin.isOrigin then
+            if origin.isOrigin and origin.currentVariant then pings.setVariant(origin.currentVariant) end
+
             wasHurt = false
 
             local emissive = origin.isOrigin and origin.emissive and type(origin.emissive) == "boolean"
 
             origin.setPartsVisible(origin.isOrigin)
             origin.setPartsEmissive(emissive)
-            origin.squishyToggle(origin.isOrigin)
 
             if origin.isOrigin then
                 action_wheel:setPage(origin.page)
@@ -289,6 +279,8 @@ function util.tick()
         end
 
         if origin.isOrigin then
+            currentOrigin = origin
+
             if type(origin.emissive) == "function" then
                 local emissive = origin.emissive()
                 if origin.wasEmissive ~= emissive then

@@ -181,6 +181,20 @@ function util.compare(value, ...)
     return nil
 end
 
+---Thanks `bitslayn` on the Figura Discord!
+---Simply inverts and obfuscates the string in a non-destructive way
+---Converts a string: "Meow :3" <-> "ಚЈ߅ￌ"
+---Calling this on an obfuscated string will return the unobfuscated string
+---@param text string
+function util.invert(text)
+    local len = #text
+    local bytes = { string.byte(text, 1, len) }
+    for i = 1, len do
+        bytes[i] = bit32.bxor(bytes[i], 255)
+    end
+    return string.char(table.unpack(bytes))
+end
+
 ---@param key any
 ---@param default any
 ---@return any
