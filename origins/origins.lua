@@ -40,6 +40,8 @@ end
 ---@param variantID string
 function pings.setVariant(variantID)
     local origin = origins.current
+    local variant = origin.variants[variantID]
+
     if origin.lastVariant then
         local last = origin.variants[origin.lastVariant]
         if last.parts then
@@ -53,18 +55,20 @@ function pings.setVariant(variantID)
             end
         end
     end
-    local variant = origin.variants[variantID]
+    
     if variant.parts then
         for _, part in ipairs(variant.parts) do
             part:setVisible(true)
         end
     end
+
     if variant.textureParts then
         for _, obj in ipairs(variant.textureParts) do
             obj.part:setVisible(true)
             obj.part:setPrimaryTexture("CUSTOM", obj.texture)
         end
     end
+
     origin.lastVariant = variantID
 end
 
@@ -165,7 +169,7 @@ function origins.new(id)
         end
 
         util.tick:register(function()
-            if origin.isOrigin then
+            if origin then
                 pings.setVariant(origin.currentVariant)
             end
         end, 120)
