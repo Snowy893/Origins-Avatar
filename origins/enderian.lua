@@ -9,8 +9,6 @@ enderian.sounds.ambient = {
 
 enderian.sounds.hurt = sounds["minecraft:entity.enderman.hurt"]
 
-enderian.emissive = true
-
 ---@type Util.AmbientParticle
 local portal = {
     id = "minecraft:portal",

@@ -76,9 +76,6 @@ function origins.new(id)
     ---@field page Page
     ---@field parts ModelPart[]
     ---@field partsCoveredByArmor { [Entity.slot]: { [integer|Minecraft.itemID]: ModelPart } }
-    ---@field emissive boolean|fun(): boolean
-    ---@field emissiveBuffer (integer|0|{ on: integer, off: integer })?
-    ---@field emissiveModelParts ModelPart[]
     ---@field sounds { ambient: Origins.AmbientSound?, hurt: Sound? }
     ---@field tick fun()?
     ---@field change fun(toggle: boolean)?
@@ -87,21 +84,8 @@ function origins.new(id)
     local origin = {}
     origin.id = not id:find(":", 2) and "origins:" .. id or id
     origin.isOrigin = false
-    origin.emissiveModelParts = { models.model.root }
     origin.sounds = {}
     origin.variants = {}
-
-    local originmt = {}
-    setmetatable(origin, originmt)
-
-    local emissiveFunc
-    
-    function originmt:__newindex(key, value)
-        if key == "emissive" and type(value) == "function" then
-            emissiveFunc = value
-        end
-        rawset(self, key, value)
-    end
 
     ---@param toggle boolean
     function origin.setPartsVisible(toggle)
@@ -119,14 +103,6 @@ function origins.new(id)
             for k, part in pairs(parts) do
                 part:setVisible(not (type(k) ~= "string" and isWearing or item.id:find(k) ~= nil))
             end
-        end
-    end
-
-    ---@param toggle boolean
-    function origin.setPartsEmissive(toggle)
-        local renderType = toggle and "EYES" or "NONE"
-        for _, part in ipairs(origin.emissiveModelParts) do
-            part:setSecondaryRenderType(renderType)
         end
     end
 
@@ -158,47 +134,6 @@ function origins.new(id)
             return origin.isOrigin and ambient.condition()
         end):timing(ambient.minTicks, ambient.maxTicks)
             :register()
-    end
-
-    local function emissiveBufferInit()
-        local onBuffer
-        local offBuffer
-
-        if type(origin.emissiveBuffer) == "table" then
-            onBuffer = origin.emissiveBuffer.on
-            offBuffer = origin.emissiveBuffer.off
-        else
-            onBuffer = origin.emissiveBuffer
-            offBuffer = onBuffer
-        end
-
-        local onTimer = 0
-        local offTimer = 0
-        local wasEmissive
-
-        function origin.emissive()
-            local emissive = emissiveFunc()
-
-            if wasEmissive ~= emissive then
-                if emissive then
-                    onTimer = onTimer + 1
-                    if onTimer == onBuffer or onBuffer == 0 then
-                        wasEmissive = emissive
-                        onTimer = 0
-                    end
-                    offTimer = 0
-                else
-                    offTimer = offTimer + 1
-                    if offTimer == offBuffer or offBuffer == 0 then
-                        wasEmissive = emissive
-                        offTimer = 0
-                    end
-                    onTimer = 0
-                end
-            end
-
-            return wasEmissive
-        end
     end
 
     local function variantActionsInit()
@@ -241,10 +176,6 @@ function origins.new(id)
             ambientSoundsInit()
         end
 
-        if emissiveFunc and origin.emissiveBuffer and origin.emissiveBuffer ~= 0 then
-            emissiveBufferInit()
-        end
-
         if host:isHost() and next(origin.variants) ~= nil then
             variantActionsInit()
         end
@@ -260,10 +191,9 @@ local lastHealth = 20
 function events.entity_init()
     for _, origin in pairs(origins.ALL) do
         origin.setPartsVisible(false)
-        origin.setPartsEmissive(false)
     end
 end
-log("...")
+
 function util.tick()
     origins.current = getCurrentOrigin()
     local origin = origins.current
@@ -271,7 +201,6 @@ function util.tick()
     if not origin then
         if origins.last then
             origins.last.setPartsVisible(false)
-            origins.last.setPartsEmissive(false)
             if origins.last.change then
                 origins.last.change(false)
             end
@@ -286,7 +215,6 @@ function util.tick()
     if origin ~= origins.last then
         if origins.last then
             origins.last.setPartsVisible(false)
-            origins.last.setPartsEmissive(false)
             if origins.last.change then
                 origins.last.change(false)
             end
@@ -297,10 +225,6 @@ function util.tick()
         end
 
         wasHurt = false
-        
-        if origin.emissive and type(origin.emissive) == "boolean" then
-            origin.setPartsEmissive(true)
-        end
 
         origin.setPartsVisible(true)
 
@@ -309,14 +233,6 @@ function util.tick()
         if origin.change then
             origin.change(true)
         end
-    end
-
-    if type(origin.emissive) == "function" then
-        local emissive = origin.emissive()
-        if origin.wasEmissive ~= emissive then
-            origin.setPartsEmissive(emissive)
-        end
-        origin.wasEmissive = emissive
     end
 
     origin.checkArmorParts()

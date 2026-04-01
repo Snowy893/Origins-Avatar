@@ -9,10 +9,6 @@ blazeborn.sounds.ambient = {
 
 blazeborn.sounds.hurt = sounds["minecraft:entity.blaze.hurt"]
 
-function blazeborn.emissive()
-    return player:isOnFire()
-end
-
 ---@type Util.AmbientParticle
 local steam = {
     id = client.isModLoaded("farmersdelight")

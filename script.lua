@@ -10,7 +10,6 @@ util.RENDER_AMBIENT_FIRST_PERSON = true
 ---------------------------------------------------------------------------------
 
 vanilla_model.PLAYER:setVisible(false)
-models.model.root:setSecondaryRenderType("EYES")
 
 if not USE_VANILLA_SKIN then return end
 
