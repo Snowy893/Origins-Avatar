@@ -169,7 +169,7 @@ function origins.new(id)
         end
 
         util.tick:register(function()
-            if origin then
+            if origin.isOrigin then
                 pings.setVariant(origin.currentVariant)
             end
         end, 120)
@@ -218,11 +218,14 @@ function util.tick()
 
     if origin ~= origins.last then
         if origins.last then
+            origins.last.isOrigin = false
             origins.last.setPartsVisible(false)
             if origins.last.change then
                 origins.last.change(false)
             end
         end
+
+        origin.isOrigin = true
 
         if origin.currentVariant then
             pings.setVariant(origin.currentVariant)
