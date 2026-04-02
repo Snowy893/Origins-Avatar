@@ -37,10 +37,10 @@ end
 ---     item: ItemStack|Minecraft.itemID,
 ---}
 
----@param variantID string
+---@param variantID number
 function pings.setVariant(variantID)
     local origin = origins.current
-    local variant = origin.variants[variantID]
+    local variant = origin.variants[origin.convertVariantID(variantID)]
 
     if origin.lastVariant then
         local last = origin.variants[origin.lastVariant]
@@ -69,7 +69,7 @@ function pings.setVariant(variantID)
         end
     end
 
-    origin.lastVariant = variantID
+    origin.lastVariant = origin.convertVariantID(variantID)
 end
 
 ---@param id string If no namespace is provided, assumes `"origins:<id>"`
@@ -85,11 +85,26 @@ function origins.new(id)
     ---@field change fun(toggle: boolean)?
     ---@field variants { [string]: Origins.Variant }?
     ---@field squishy SquAPI<T>[]
+    ---@field currentVariant string
     local origin = {}
     origin.id = not id:find(":", 2) and "origins:" .. id or id
     origin.isOrigin = false
     origin.sounds = {}
     origin.variants = {}
+    
+    local numberToVariant = {}
+    local variantToNumber = {}
+
+    ---@overload fun(variant: string): number
+    ---@param variant number
+    ---@return string
+    function origin.convertVariantID(variant)
+        if type(variant) == "number" then
+            return numberToVariant[variant]
+        else
+            return variantToNumber[variant]
+        end
+    end
 
     function origin.checkArmorParts()
         if not origin.partsCoveredByArmor then return end
@@ -150,9 +165,10 @@ function origins.new(id)
         ambient.minTicks = ambient.minTicks or 600
         ambient.maxTicks = ambient.maxTicks or 1200
         ambient.condition = ambient.condition or world.exists
+        ambient.pitch = ambient.pitch or ambient.sound:getPitch()
 
         periodical.new(function()
-            util.playSound(ambient.sound)
+            util.playSound(ambient.sound, ambient.pitch)
         end):condition(function()
             return origin.isOrigin and ambient.condition()
         end):timing(ambient.minTicks, ambient.maxTicks)
@@ -181,7 +197,7 @@ function origins.new(id)
                 :title(variant.name)
                 :item(variant.item)
                 :onLeftClick(function()
-                    pings.setVariant(k)
+                    pings.setVariant(origin.convertVariantID(k))
                     config:save(origin.id.."_current_variant", k)
                     origin.currentVariant = k
                 end)
@@ -189,7 +205,7 @@ function origins.new(id)
 
         util.tick:register(function()
             if origin.isOrigin then
-                pings.setVariant(origin.currentVariant)
+                pings.setVariant(origin.convertVariantID(origin.currentVariant))
             end
         end, 120)
     end
@@ -197,6 +213,14 @@ function origins.new(id)
     function origin:register()
         if origin.sounds.ambient then
             ambientSoundsInit()
+        end
+
+        if next(origin.variants) ~= nil then
+            for k, _ in pairs(origin.variants) do
+                local n = #numberToVariant+1
+                numberToVariant[n] = k
+                variantToNumber[k] = n
+            end
         end
 
         if host:isHost() and next(origin.variants) ~= nil then
@@ -240,17 +264,17 @@ function util.tick()
         origin.setEnabled(true)
 
         if origin.currentVariant then
-            pings.setVariant(origin.currentVariant)
+            pings.setVariant(origin.convertVariantID(origin.currentVariant))
         end
 
         wasHurt = false
     end
 
-    origin.checkArmorParts()
-
     if wasHurt and origin.sounds.hurt then
         util.playSound(origin.sounds.hurt)
     end
+
+    origin.checkArmorParts()
 
     origin.squishyTick()
 

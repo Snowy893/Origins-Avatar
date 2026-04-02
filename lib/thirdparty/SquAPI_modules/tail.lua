@@ -1,3 +1,4 @@
+-- Edited by Snowy893 to fix docs
 ---@meta _
 local squassets
 local assetPath = "./SquAssets"

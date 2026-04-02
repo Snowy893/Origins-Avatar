@@ -1,3 +1,4 @@
+-- Edited by Snowy893 to include earFlickStrength parameter, and to fix docs
 ---@meta _
 local squassets
 local assetPath = "./SquAssets"
@@ -19,9 +20,10 @@ ear.all = {}
 ---@param earFlickChance? number Defaults to `400`, how often the ears should flick in ticks, timer is random between 0 to n ticks.
 ---@param earStiffness? number Defaults to `0.1`, how stiff the ears should be.
 ---@param earBounce? number Defaults to `0.8`, how bouncy the ears should be.
+---@param earFlickStrength? number Defaults to `50`, how much the ears should flick
 ---@return SquAPI.ear
 function ear:new(leftEar, rightEar, rangeMultiplier, horizontalEars, bendStrength, doEarFlick,
-                        earFlickChance, earStiffness, earBounce)
+                        earFlickChance, earStiffness, earBounce, earFlickStrength)
     ---@class SquAPI.ear
     local self = {}
 
@@ -34,6 +36,7 @@ function ear:new(leftEar, rightEar, rangeMultiplier, horizontalEars, bendStrengt
     self.bendStrength = bendStrength or 2
     earStiffness = earStiffness or 0.1
     earBounce = earBounce or 0.8
+    self.earFlickStrength = earFlickStrength or 50
 
     if doEarFlick == nil then doEarFlick = true end
     self.doEarFlick = doEarFlick
@@ -104,9 +107,9 @@ function ear:tick()
       if self.doEarFlick then
         if math.random(0, self.earFlickChance) == 1 then
           if math.random(0, 1) == 1 then
-            self.earx.vel = self.earx.vel + 50
+            self.earx.vel = self.earx.vel + self.earFlickStrength
           else
-            self.earz.vel = self.earz.vel - 50
+            self.earz.vel = self.earz.vel - self.earFlickStrength
           end
         end
       end

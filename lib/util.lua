@@ -376,14 +376,24 @@ function util.isNight()
     return time >= 13000 and time <= 23000
 end
 
+function events.render(delta)
+    util.delta = delta
+end
+
 ---@param sound Sound
 ---@param position Vector3?
+---@param pitch number?
 ---@param noRandomPitch boolean?
-function util.playSound(sound, position, noRandomPitch)
-    local pitch = noRandomPitch and 0 or math.random(-0.5, 1)
-    local pos = position or player:getPos()
+function util.playSound(sound, pitch, noRandomPitch, position)
+    local p
+    if pitch then
+        p = noRandomPitch and pitch or (math.random() / 2 + 1) * pitch
+    else
+        p = noRandomPitch and 0.9 or math.random() / 2 + 1
+    end
+    local pos = position or player:getPos(util.delta):add(vec(0, player:getEyeHeight(), 0))
     sound:stop()
-    sound:pitch(pitch)
+    sound:pitch(p)
     sound:pos(pos)
     sound:play()
 end

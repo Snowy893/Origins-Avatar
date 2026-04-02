@@ -8,7 +8,7 @@ local tail = models.model.root.Body.horseTail
 local helmet = 6 ---@type Entity.slot
 
 horse.sounds.ambient = {
-    sound = sounds["minecraft:entity.horse.ambient"],
+    sound = sounds["minecraft:entity.horse.ambient"]:volume(0.8),
 }
 
 horse.sounds.hurt = sounds["minecraft:entity.horse.hurt"]
@@ -24,7 +24,8 @@ horse.squishy = {
         true,
         1000,
         0.08,
-        0.95
+        0.95,
+        10
     ),
     squapi.tail:new({ tail },
         nil,
