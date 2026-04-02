@@ -8,4 +8,4 @@ function arachnid.emissive()
     return world.getLightLevel(player:getPos()) < 10
 end
 
-arachnid:init()
+arachnid:register()

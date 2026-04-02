@@ -43,4 +43,4 @@ horse.squishy = {
     ),
 }
 
-horse:init()
+horse:register()

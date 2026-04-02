@@ -87,4 +87,4 @@ feline.squishy = {
     ),
 }
 
-feline:init()
+feline:register()

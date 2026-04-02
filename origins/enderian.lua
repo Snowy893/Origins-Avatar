@@ -24,4 +24,4 @@ end
 
 util.newAmbientParticles(portal)
 
-enderian:init()
+enderian:register()

@@ -40,4 +40,4 @@ end
 util.newAmbientParticles(steam)
 util.newAmbientParticles(flame)
 
-blazeborn:init()
+blazeborn:register()

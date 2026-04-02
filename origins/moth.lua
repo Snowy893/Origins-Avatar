@@ -7,4 +7,4 @@ local fluff = models.model.root.Head.mothFluff
 
 -- moth.partsToHide = { [5] = { ["minecraft:elytra"] = wings } }
 
-moth:init()
+moth:register()

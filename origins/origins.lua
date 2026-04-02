@@ -91,14 +91,6 @@ function origins.new(id)
     origin.sounds = {}
     origin.variants = {}
 
-    ---@param toggle boolean
-    function origin.setPartsVisible(toggle)
-        if not origin.parts then return end
-        for _, part in ipairs(origin.parts) do
-            part:setVisible(toggle)
-        end
-    end
-
     function origin.checkArmorParts()
         if not origin.partsCoveredByArmor then return end
         for slot, parts in pairs(origin.partsCoveredByArmor) do
@@ -124,6 +116,33 @@ function origins.new(id)
         for _, obj in ipairs(origin.squishy) do
             if obj.render then obj:render(delta, context) end ---@diagnostic disable-line: undefined-field
         end
+    end
+
+    ---@param toggle boolean
+    local function setPartsVisible(toggle)
+        if not origin.parts then return end
+        for _, part in ipairs(origin.parts) do
+            part:setVisible(toggle)
+        end
+    end
+
+    ---@param toggle boolean
+    function origin.setEnabled(toggle)
+        origin.isOrigin = toggle
+
+        setPartsVisible(toggle)
+
+        if toggle then
+            action_wheel:setPage(origin.page)
+        end
+
+        if origin.change then
+            origin.change(toggle)
+        end
+    end
+
+    function origin.init()
+        origin.setEnabled(false)
     end
 
     local function ambientSoundsInit()
@@ -175,7 +194,7 @@ function origins.new(id)
         end, 120)
     end
 
-    function origin:init()
+    function origin:register()
         if origin.sounds.ambient then
             ambientSoundsInit()
         end
@@ -194,7 +213,7 @@ local lastHealth = 20
 
 function events.entity_init()
     for _, origin in pairs(origins.ALL) do
-        origin.setPartsVisible(false)
+        origin.init()
     end
 end
 
@@ -204,10 +223,7 @@ function util.tick()
 
     if not origin then
         if origins.last then
-            origins.last.setPartsVisible(false)
-            if origins.last.change then
-                origins.last.change(false)
-            end
+            origins.last.setEnabled(false)
         end
         origins.last = origin
         return
@@ -218,28 +234,16 @@ function util.tick()
 
     if origin ~= origins.last then
         if origins.last then
-            origins.last.isOrigin = false
-            origins.last.setPartsVisible(false)
-            if origins.last.change then
-                origins.last.change(false)
-            end
+            origins.last.setEnabled(false)
         end
 
-        origin.isOrigin = true
+        origin.setEnabled(true)
 
         if origin.currentVariant then
             pings.setVariant(origin.currentVariant)
         end
 
         wasHurt = false
-
-        origin.setPartsVisible(true)
-
-        action_wheel:setPage(origin.page)
-
-        if origin.change then
-            origin.change(true)
-        end
     end
 
     origin.checkArmorParts()

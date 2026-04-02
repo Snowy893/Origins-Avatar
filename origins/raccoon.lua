@@ -35,4 +35,4 @@ raccoon.squishy = {
     ),
 }
 
-raccoon:init()
+raccoon:register()
