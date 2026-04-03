@@ -10,7 +10,7 @@ local tail = models.model.root.Body.felineTail
 local tailTexture = "textures.feline.feline_tail_"
 
 feline.sounds.ambient = {
-    sound = sounds["minecraft:entity.cat.ambient"]:volume(0.8),
+    sound = sounds["minecraft:entity.cat.ambient"]:volume(0.6),
 }
 
 feline.sounds.hurt = sounds["minecraft:entity.cat.hurt"]
@@ -69,7 +69,7 @@ feline.squishy = {
         0.3,
         true,
         1000,
-        0.08,
+        0.02,
         0.95,
         10
     ),
