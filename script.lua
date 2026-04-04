@@ -52,5 +52,5 @@ if name == "NAME HERE" then name = "${name}" end
 
 nameplate.ALL:setText(toJson {
     name = name,
-    color = vectors.rgbToHex(rgb),
+    color = vectors.rgbToHex(rgb / 255),
 })
