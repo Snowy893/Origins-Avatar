@@ -40,7 +40,7 @@ if USE_VANILLA_SKIN then
         models.model.root.RightLeg["Right Pants"],
     }) do
         part:setPrimaryTexture("SKIN")
-    end    
+    end
 
     function events.entity_init()
         local modelType = player:getModelType() == "DEFAULT"
