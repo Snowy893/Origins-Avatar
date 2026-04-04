@@ -14,7 +14,13 @@ local function getCurrentOrigin()
     local layers = nbt.cardinal_components
         and nbt.cardinal_components["origins:origin"]
         and nbt.cardinal_components["origins:origin"].OriginLayers
-    local origin = layers[1].Origin
+    local origin
+    for _, v in ipairs(layers) do
+        if v.Layer == "origins:origin" then
+            origin = v.Origin
+            break
+        end
+    end
     return origins.ALL[origin]
 end
 
