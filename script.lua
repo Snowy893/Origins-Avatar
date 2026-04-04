@@ -1,6 +1,12 @@
 local util = require "lib.util"
 ---------------------------------------------------------------------------------
 
+-- Replace your name with whatever you like! ("NAME HERE" will put your Minecraft username)
+local name = "NAME HERE"
+-- Replace the first, second, and third numbers with red, green, and blue values of your choosing.
+-- Use a color picker and get the rgb values from a color you like: https://htmlcolorcodes.com/color-picker/
+local rgb = vec(255, 255, 255)
+
 -- Set this to false if you want to use the skin texture in the blockbench model.
 local USE_VANILLA_SKIN = true
 
@@ -41,3 +47,10 @@ function events.entity_init()
     models.model.root.LeftArm.slimLeftArm:setVisible(not modelType)
     models.model.root.RightArm.slimRightArm:setVisible(not modelType)
 end
+
+if name == "NAME HERE" then name = "${name}" end
+
+nameplate.ALL:setText(toJson {
+    name = name,
+    color = vectors.rgbToHex(rgb),
+})
