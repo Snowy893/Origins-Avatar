@@ -49,8 +49,7 @@ function events.entity_init()
 end
 
 if name == "NAME HERE" then name = "${name}" end
-
 nameplate.ALL:setText(toJson {
-    name = name,
-    color = vectors.rgbToHex(rgb / 255),
+    text = name,
+    color = "#"..vectors.rgbToHex(rgb / 255),
 })
