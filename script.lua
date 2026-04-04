@@ -52,11 +52,13 @@ if USE_VANILLA_SKIN then
 end
 
 if USE_VANILLA_CAPE_TEXTURE then
-    if player:hasCape() then
-        models.model.root.Cape:setPrimaryTexture("CAPE")
-        models.model.root.Elytra:setPrimaryTexture("CAPE")
-    else
-        models.model.root.Elytra:setPrimaryTexture("ELYTRA")
+    function events.entity_init()
+        if player:hasCape() then
+            models.model.root.Cape:setPrimaryTexture("CAPE")
+            models.model.root.Elytra:setPrimaryTexture("CAPE")
+        else
+            models.model.root.Elytra:setPrimaryTexture("ELYTRA")
+        end
     end
 end
 
