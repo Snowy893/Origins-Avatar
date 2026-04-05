@@ -13,7 +13,7 @@ feline.sounds.ambient = {
     sound = sounds["minecraft:entity.cat.ambient"]:volume(0.6),
 }
 
-feline.sounds.hurt = sounds["minecraft:entity.cat.hurt"]
+feline.sounds.hurt = sounds["minecraft:entity.cat.hurt"]:volume(0.6)
 
 feline.parts = { ears, tail }
 

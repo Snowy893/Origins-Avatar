@@ -6,6 +6,8 @@ local merling = origins.new("merling")
 local headFins = models.model.root.Head.merlingFins
 local backFin = models.model.root.Body.merlingBackFin
 
+merling.sounds.hurt = sounds["minecraft:entity.salmon.hurt"]:setPitch(0.5):volume(0.6)
+
 merling.parts = { headFins, backFin }
 
 merling.squishy = {

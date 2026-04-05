@@ -1,5 +1,7 @@
 local origins = require "origins.origins"
+local originsapi = require "lib.thirdparty.OriginsAPI"
 local squapi = require "lib.thirdparty.SquAPI"
+local util = require "lib.util"
 
 local horse = origins.new("snowy:horse")
 
@@ -7,11 +9,14 @@ local ears = models.model.root.Head.horseEars
 local tail = models.model.root.Body.horseTail
 local helmet = 6 ---@type Entity.slot
 
+local sprintParticle = "minecraft:flame" ---@type Minecraft.particleID
+local sprintParticleSpeed = "minecraft:soul_fire_flame" ---@type Minecraft.particleID
+
 horse.sounds.ambient = {
     sound = sounds["minecraft:entity.horse.ambient"]:volume(0.6),
 }
 
-horse.sounds.hurt = sounds["minecraft:entity.horse.hurt"]
+horse.sounds.hurt = sounds["minecraft:entity.horse.hurt"]:volume(0.6)
 
 horse.parts = { ears, tail }
 horse.partsCoveredByArmor = { [helmet] = { ears } }
@@ -43,5 +48,21 @@ horse.squishy = {
         nil
     ),
 }
+
+util.tick:register(function()
+    if not horse.isOrigin then return end
+    
+    local speed = originsapi.getPowerData(player, "snowy:great_sprint_speed_resource")
+
+    local velocity = player:getVelocity().xz:length()
+
+    if speed == 130 and velocity >= 0.3 and player:isOnGround() then
+        particles:newParticle(
+            velocity >= 0.49 and sprintParticleSpeed or sprintParticle,
+            player:getPos(util.delta),
+            vec(0.1, 0.1, 0.1)
+        )
+    end
+end, 2)
 
 horse:register()

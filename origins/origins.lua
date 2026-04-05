@@ -140,18 +140,14 @@ function origins.new(id)
     end
 
     ---@param toggle boolean
-    local function setPartsVisible(toggle)
-        if not origin.parts then return end
-        for _, part in ipairs(origin.parts) do
-            part:setVisible(toggle)
-        end
-    end
-
-    ---@param toggle boolean
     function origin.setEnabled(toggle)
         origin.isOrigin = toggle
 
-        setPartsVisible(toggle)
+        if origin.parts then
+            for _, part in ipairs(origin.parts) do
+                part:setVisible(toggle)
+            end
+        end
 
         if toggle then
             action_wheel:setPage(origin.page)
