@@ -43,7 +43,7 @@ horse.squishy = {
         nil,
         0.006,
         nil,
-        35,
+        25,
         -0.5,
         nil
     ),
