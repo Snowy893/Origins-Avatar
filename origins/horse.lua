@@ -10,7 +10,7 @@ local tail = models.model.root.Body.horseTail
 local helmet = 6 ---@type Entity.slot
 
 local sprintParticle = "minecraft:flame" ---@type Minecraft.particleID
-local sprintParticleSpeed = "minecraft:soul_fire_flame" ---@type Minecraft.particleID
+local sprintParticleSwiftness = "minecraft:soul_fire_flame" ---@type Minecraft.particleID
 
 horse.sounds.ambient = {
     sound = sounds["minecraft:entity.horse.ambient"]:volume(0.6),
@@ -56,14 +56,15 @@ util.tick:register(function()
 
     local velocity = player:getVelocity().xz:length()
 
+    local hasSwiftness = velocity >= 0.49
+
     if speed == 130 and velocity >= 0.3 and player:isOnGround() then
-        
         particles:newParticle(
-            velocity >= 0.49 and sprintParticleSpeed or sprintParticle,
+            hasSwiftness and sprintParticleSwiftness or sprintParticle,
             player:getPos(util.delta),
-            vec((math.random() - 0.5) / 5, 0, (math.random() - 0.5) / 5)
-        )
+            (math.random() - 0.5) / 5, 0, (math.random() - 0.5) / 5
+        ):scale(hasSwiftness and 1.3 or 0.96)
     end
-end, 2)
+end, 1)
 
 horse:register()

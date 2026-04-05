@@ -15,7 +15,7 @@ avian.squishy = {
         3.5,
         0.8,
         0.5,
-        0.4,
+        0.58,
         nil,
         1,
         nil,
@@ -30,9 +30,9 @@ avian.squishy = {
         3.5,
         0.8,
         0.4,
-        0.5,
+        0.58,
         nil,
-        9,
+        12,
         nil,
         0.006,
         nil,
@@ -43,20 +43,24 @@ avian.squishy = {
 }
 
 util.tick:register(function()
-    if not player:isSneaking() or player:isOnGround() then return end
+    if not avian.isOrigin or not player:isSneaking() or player:isOnGround() then return end
 
     local pos = player:getPos()
-    local block = world.getBlockState(vec(pos.x, pos.y - 0.01, pos.z))
+    local fallSpeed = player:getVelocity().y
+    local block = world.getBlockState(pos.x, pos.y - 0.01, pos.z)
     local inAir = block.id == "minecraft:air" or block.id == "minecraft:cave_air" or block.id == "minecraft:void_air"
 
     if inAir then
         animations.model.avian_flap:stop()
         animations.model.avian_flap:play()
-        particles:newParticle("cloud", pos, vec(
-            (math.random() - 0.5) / 6,
-            (math.random() - 0.5) / 6,
-            (math.random() - 0.5) / 6
-        ))
+        particles:newParticle("cloud",
+            pos.x,
+            pos.y - 0.4,
+            pos.z,
+            (math.random() - 0.5) / 5,
+            ((math.random() - 0.5) / 5) + fallSpeed,
+            (math.random() - 0.5) / 5
+        ):scale(0.82)
     end
 end, 3)
 
