@@ -57,10 +57,11 @@ util.tick:register(function()
     local velocity = player:getVelocity().xz:length()
 
     if speed == 130 and velocity >= 0.3 and player:isOnGround() then
+        
         particles:newParticle(
             velocity >= 0.49 and sprintParticleSpeed or sprintParticle,
             player:getPos(util.delta),
-            vec(0.1, 0.1, 0.1)
+            vec((math.random() - 0.5) / 5, 0, (math.random() - 0.5) / 5)
         )
     end
 end, 2)
