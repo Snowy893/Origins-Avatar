@@ -402,14 +402,10 @@ end
 ---@param position Vector3?
 ---@param pitch number?
 ---@param noRandomPitch boolean?
-function util.playSound(sound, pitch, noRandomPitch, position)
-    local p
-    if pitch then
-        p = noRandomPitch and pitch or (math.random() / 2 + 1) * pitch
-    else
-        p = noRandomPitch and 0.9 or math.random() / 2 + 1
-    end
-    local pos = position or player:getPos(util.delta):add(vec(0, player:getEyeHeight(), 0))
+function util.playSound(sound, pitch, position, noRandomPitch)
+    pitch = pitch or 1
+    local p = noRandomPitch and pitch or math.lerp(pitch - 0.25, pitch + 0.25, math.random())
+    local pos = position or player:getPos()
     sound:stop()
     sound:pitch(p)
     sound:pos(pos)

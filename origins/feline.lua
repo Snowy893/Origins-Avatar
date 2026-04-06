@@ -9,8 +9,6 @@ local earsTexture = "textures.feline.feline_ears_"
 local tail = models.model.root.Body.felineTail
 local tailTexture = "textures.feline.feline_tail_"
 
-feline.sounds.hurt = sounds["minecraft:entity.cat.hurt"]:volume(0.6)
-
 feline.parts = { ears, tail }
 
 feline.variants.black = {

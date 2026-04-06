@@ -12,8 +12,8 @@ local helmet = 6 ---@type Entity.slot
 local sprintParticle = "minecraft:flame" ---@type Minecraft.particleID
 local sprintParticleSwiftness = "minecraft:soul_fire_flame" ---@type Minecraft.particleID
 
-horse.sounds.ambient = sounds["minecraft:entity.horse.ambient"]:volume(0.7)
-horse.sounds.hurt = sounds["minecraft:entity.horse.hurt"]:volume(0.7)
+horse.sounds.ambient = sounds["minecraft:entity.horse.ambient"]:volume(0.7):pitch(0.9)
+horse.sounds.hurt = sounds["minecraft:entity.horse.hurt"]:volume(0.7):pitch(0.9)
 
 horse.parts = { ears, tail }
 horse.partsCoveredByArmor = { [helmet] = { ears } }

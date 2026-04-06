@@ -163,10 +163,6 @@ function origins.new(id)
         end
     end
 
-    function origin.init()
-        origin.setEnabled(false)
-    end
-
     local function hurtSoundInit()
         if type(origin.sounds.hurt) == "Sound" then
             origin.sounds.hurt = { sound = origin.sounds.hurt }
@@ -256,11 +252,9 @@ function origins.new(id)
     return origin
 end
 
-local lastHealth = 20
-
 function events.entity_init()
     for _, origin in pairs(origins.ALL) do
-        origin.init()
+        origin.setEnabled(false)
     end
 end
 
@@ -276,9 +270,6 @@ function util.tick()
         return
     end
 
-    local health = player:getHealth()
-    local wasHurt = lastHealth > health
-
     if origin ~= origins.last then
         if origins.last then
             origins.last.setEnabled(false)
@@ -289,13 +280,6 @@ function util.tick()
         if origin.currentVariant then
             pings.setVariant(origin.convertVariantID(origin.currentVariant))
         end
-
-        wasHurt = false
-    end
-
-    if wasHurt and origin.sounds.hurt then
-        ---@diagnostic disable-next-line: param-type-mismatch
-        util.playSound(origin.sounds.hurt.sound, origin.sounds.hurt.pitch)
     end
 
     origin.checkArmorParts()
@@ -304,8 +288,32 @@ function util.tick()
 
     if origin.tick then origin.tick() end
 
-    lastHealth = health
     origins.last = origin
+end
+
+-- Thanks `manuel_2867` on the Figura Discord for original snippet! https://discord.com/channels/1129805506354085959/1234218592187453452/1463663512520753227
+function events.on_play_sound(id, pos, volume, pitch, loop, category, path)
+    if not path then return
+    elseif not origins.current or not origins.current.sounds.hurt then return
+    elseif not player:isLoaded() then return end
+
+    local nearest = math.huge
+    local uuid
+
+    for _, playr in pairs(world.getPlayers()) do
+        local dist = (playr:getPos() - pos):length()
+        if dist < nearest then
+            nearest = dist
+            uuid = playr:getUUID()
+        end
+    end
+
+    if uuid ~= player:getUUID() or nearest > 0.8 then return end
+
+    if id:find("player") and id:find("hurt") then
+        ---@diagnostic disable-next-line: param-type-mismatch
+        util.playSound(origins.current.sounds.hurt.sound, origins.current.sounds.hurt.pitch, pos)
+    end
 end
 
 function events.render(delta, context)

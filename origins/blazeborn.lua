@@ -3,8 +3,8 @@ local util = require "lib.util"
 
 local blazeborn = origins.new("blazeborn")
 
-blazeborn.sounds.ambient = sounds["minecraft:entity.blaze.burn"]:volume(0.9)
-blazeborn.sounds.hurt = sounds["minecraft:entity.blaze.hurt"]:volume(0.9)
+blazeborn.sounds.ambient = sounds["minecraft:entity.blaze.burn"]:volume(0.9):pitch(0.9)
+blazeborn.sounds.hurt = sounds["minecraft:entity.blaze.hurt"]:volume(0.9):pitch(0.9)
 
 ---@type Util.AmbientParticle
 local steam = {
