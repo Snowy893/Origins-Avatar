@@ -10,10 +10,9 @@ origins.ALL = {}
 ---@return Origin?
 local function getCurrentOrigin()
     local nbt = player:getNbt()
-    local layers = util.index(nbt)
-        .cardinal_components
-        ["origins:origin"]
-        .OriginLayers
+    local layers = nbt.cardinal_components
+        and nbt.cardinal_components["origins:origin"]
+        and nbt.cardinal_components["origins:origin"].OriginLayers
     local origin
     for _, v in ipairs(layers) do
         if v.Layer == "origins:origin" then
