@@ -431,15 +431,15 @@ util.RENDER_AMBIENT_FIRST_PERSON = false
 ---@type Util.AmbientParticle[]
 local ambients = {}
 
----@param particle Util.AmbientParticle
+---@param ambient Util.AmbientParticle
 ---@return Util.AmbientParticle
-function util.newAmbientParticles(particle)
-    particle.offset = particle.offset or vec(0, 1, 0)
-    particle.velocity = particle.velocity or 0.5
-    particle.condition = particle.condition or world.exists
-    particle.countLeft = 0
-    table.insert(ambients, particle)
-    return particle
+function util.newAmbientParticles(ambient)
+    ambient.offset = ambient.offset or vec(0, 1, 0)
+    ambient.velocity = ambient.velocity or 0.5
+    ambient.condition = ambient.condition or world.exists
+    ambient.countLeft = 0
+    table.insert(ambients, ambient)
+    return ambient
 end
 
 function util.tick()
@@ -455,9 +455,12 @@ function util.tick()
                     math.lerp(-ambient.radius, ambient.radius, math.random())
                 )
                 particles:newParticle(ambient.id, pos, 
-                    math.lerp(-ambient.velocity, ambient.velocity, math.random()),
-                    math.lerp(-ambient.velocity, ambient.velocity, math.random()),
-                    math.lerp(-ambient.velocity, ambient.velocity, math.random())
+                    ambient.velocity == 0 and vec(0, 0, 0)
+                    or vec(
+                        math.lerp(-ambient.velocity, ambient.velocity, math.random()),
+                        math.lerp(-ambient.velocity, ambient.velocity, math.random()),
+                        math.lerp(-ambient.velocity, ambient.velocity, math.random())
+                    )
                 )
             end
         end
