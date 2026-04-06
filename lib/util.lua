@@ -181,18 +181,35 @@ function util.compare(value, ...)
     return nil
 end
 
----Thanks `bitslayn` on the Figura Discord!
----Simply inverts and obfuscates the string in a non-destructive way
----Converts a string: "Meow :3" <-> "ಚЈ߅ￌ"
----Calling this on an obfuscated string will return the unobfuscated string
----@param text string
-function util.invert(text)
-    local len = #text
-    local bytes = { string.byte(text, 1, len) }
-    for i = 1, len do
-        bytes[i] = bit32.bxor(bytes[i], 255)
+---@param tbl table
+function util.istable(tbl)
+    local t = type(tbl)
+    return t ~= "nil" and t ~= "number" and t ~= "string" and t ~= "boolean" and t ~= "function"
+end
+
+---@param tbl table
+---@return table
+function util.deepcopy(tbl)
+    local t = {}
+    for key, value in pairs(tbl) do
+        if util.istable(value) then
+            t[key] = util.deepcopy(value)
+        else
+            t[key] = value
+        end
     end
-    return string.char(table.unpack(bytes))
+    return t
+end
+
+---@generic T
+---@param tbl T
+---@return T
+function util.index(tbl)
+    local mt = {}
+    function mt:__index()
+        return self
+    end
+    return setmetatable(util.deepcopy(tbl), mt)
 end
 
 ---@param key any
