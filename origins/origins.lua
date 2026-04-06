@@ -23,7 +23,7 @@ local function getCurrentOrigin()
     return origins.ALL[origin]
 end
 
----@alias Origins.Sounds.Ambient {
+---@alias Origin.Sounds.Ambient {
 ---     sound: Sound,
 ---     minTicks: integer?,
 ---     maxTicks: integer?,
@@ -31,18 +31,18 @@ end
 ---     pitch: number,
 ---}
 
----@alias Origins.Sounds.Hurt {
+---@alias Origin.Sounds.Hurt {
 ---     sound: Sound,
 ---     pitch: number?,
 ---}
 
----@alias Origins.Variant.TexturePart {
+---@alias Origin.Variant.TexturePart {
 ---     part: ModelPart,
 ---     texture: Texture,
 ---}
 
----@alias Origins.Variant {
----     textureParts: Origins.Variant.TexturePart[]?,
+---@alias Origin.Variant {
+---     textureParts: Origin.Variant.TexturePart[]?,
 ---     parts: ModelPart[]?,
 ---     name: string,
 ---     item: ItemStack|Minecraft.itemID,
@@ -91,10 +91,10 @@ function origins.new(id)
     ---@field page Page
     ---@field parts ModelPart[]
     ---@field partsCoveredByArmor { [Entity.slot]: { [integer|Minecraft.itemID]: ModelPart } }
-    ---@field sounds { ambient: (Origins.Sounds.Ambient|Sound)?, hurt: (Origins.Sounds.Hurt|Sound)? }
+    ---@field sounds { ambient: (Origin.Sounds.Ambient|Sound)?, hurt: (Origin.Sounds.Hurt|Sound)? }
     ---@field tick fun()?
     ---@field change fun(toggle: boolean)?
-    ---@field variants { [string]: Origins.Variant }?
+    ---@field variants { [string]: Origin.Variant }?
     ---@field squishy SquAPI<T>[]
     ---@field currentVariant string
     local origin = {}
