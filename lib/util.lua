@@ -181,6 +181,7 @@ function util.compare(value, ...)
     return nil
 end
 
+---Properly checks if a table is a table, even if it has set its type with `__type`
 ---@param tbl table
 function util.istable(tbl)
     local t = type(tbl)
@@ -209,7 +210,7 @@ function util.index(tbl)
     function mt:__index()
         return self
     end
-    return setmetatable(util.deepcopy(tbl), mt)
+    return setmetatable(tbl, mt)
 end
 
 ---@param key any

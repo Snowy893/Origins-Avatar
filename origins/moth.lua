@@ -7,6 +7,8 @@ local antennae = models.model.root.Head.mothAntennae:setScale(0.9, 0.9, 0.9)
 local fluff = models.model.root.Head.mothFluff
 local wings = models.model.root.Body.mothWings
 
+moth.sounds.hurt = sounds["minecraft:entity.bat.hurt"]:setPitch(0.6):volume(0.4)
+
 moth.parts = { antennae, wings, fluff }
 
 local lastJumps = 3

@@ -1,4 +1,3 @@
-local originsapi = require "lib.thirdparty.OriginsAPI"
 local periodical = require "lib.periodical"
 local util = require "lib.util"
 
@@ -11,9 +10,10 @@ origins.ALL = {}
 ---@return Origin?
 local function getCurrentOrigin()
     local nbt = player:getNbt()
-    local layers = nbt.cardinal_components
-        and nbt.cardinal_components["origins:origin"]
-        and nbt.cardinal_components["origins:origin"].OriginLayers
+    local layers = util.index(nbt)
+        .cardinal_components
+        ["origins:origin"]
+        .OriginLayers
     local origin
     for _, v in ipairs(layers) do
         if v.Layer == "origins:origin" then
@@ -24,11 +24,17 @@ local function getCurrentOrigin()
     return origins.ALL[origin]
 end
 
----@alias Origins.AmbientSound {
+---@alias Origins.Sounds.Ambient {
 ---     sound: Sound,
 ---     minTicks: integer?,
 ---     maxTicks: integer?,
 ---     condition: (fun(): boolean)?,
+---     pitch: number,
+---}
+
+---@alias Origins.Sounds.Hurt {
+---     sound: Sound,
+---     pitch: number?,
 ---}
 
 ---@alias Origins.Variant.TexturePart {
@@ -86,7 +92,7 @@ function origins.new(id)
     ---@field page Page
     ---@field parts ModelPart[]
     ---@field partsCoveredByArmor { [Entity.slot]: { [integer|Minecraft.itemID]: ModelPart } }
-    ---@field sounds { ambient: Origins.AmbientSound?, hurt: Sound? }
+    ---@field sounds { ambient: (Origins.Sounds.Ambient|Sound)?, hurt: (Origins.Sounds.Hurt|Sound)? }
     ---@field tick fun()?
     ---@field change fun(toggle: boolean)?
     ---@field variants { [string]: Origins.Variant }?
@@ -162,14 +168,26 @@ function origins.new(id)
         origin.setEnabled(false)
     end
 
-    local function ambientSoundsInit()
+    local function hurtSoundInit()
+        if type(origin.sounds.hurt) == "Sound" then
+            origin.sounds.hurt = { sound = origin.sounds.hurt }
+        end
+        local hurt = origin.sounds.hurt
+        hurt.pitch = hurt.pitch or hurt.sound:getPitch()
+    end
+
+    local function ambientSoundInit()
+        if type(origin.sounds.ambient) == "Sound" then
+            origin.sounds.ambient = { sound = origin.sounds.ambient }
+        end
         local ambient = origin.sounds.ambient
-        ambient.minTicks = ambient.minTicks or 600
-        ambient.maxTicks = ambient.maxTicks or 1200
+        ambient.minTicks = ambient.minTicks or 1200
+        ambient.maxTicks = ambient.maxTicks or 1800
         ambient.condition = ambient.condition or world.exists
         ambient.pitch = ambient.pitch or ambient.sound:getPitch()
 
         periodical.new(function()
+            ---@diagnostic disable-next-line: param-type-mismatch
             util.playSound(ambient.sound, ambient.pitch)
         end):condition(function()
             return origin.isOrigin and ambient.condition()
@@ -213,8 +231,12 @@ function origins.new(id)
     end
 
     function origin:register()
+        if origin.sounds.hurt then
+            hurtSoundInit()
+        end
+
         if origin.sounds.ambient then
-            ambientSoundsInit()
+            ambientSoundInit()
         end
 
         if next(origin.variants) ~= nil then
@@ -273,7 +295,8 @@ function util.tick()
     end
 
     if wasHurt and origin.sounds.hurt then
-        util.playSound(origin.sounds.hurt)
+        ---@diagnostic disable-next-line: param-type-mismatch
+        util.playSound(origin.sounds.hurt.sound, origin.sounds.hurt.pitch)
     end
 
     origin.checkArmorParts()

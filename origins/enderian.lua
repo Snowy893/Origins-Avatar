@@ -3,11 +3,8 @@ local util = require "lib.util"
 
 local enderian = origins.new("enderian")
 
-enderian.sounds.ambient = {
-    sound = sounds["minecraft:entity.enderman.ambient"]:volume(0.8),
-}
-
-enderian.sounds.hurt = sounds["minecraft:entity.enderman.hurt"]
+enderian.sounds.ambient = sounds["minecraft:entity.enderman.ambient"]:volume(0.6)
+enderian.sounds.hurt = sounds["minecraft:entity.enderman.hurt"]:volume(0.6)
 
 ---@type Util.AmbientParticle
 local portal = {

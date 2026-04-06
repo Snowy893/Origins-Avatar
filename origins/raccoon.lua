@@ -7,8 +7,6 @@ local ears = models.model.root.Head.raccoonEars
 local tail = models.model.root.Body.raccoonTail
 local helmet = 6 ---@type Entity.slot
 
-raccoon.sounds.hurt = sounds["minecraft:entity.bat.hurt"]:pitch(0.6)
-
 raccoon.parts = { ears, tail }
 raccoon.partsCoveredByArmor = { [helmet] = { ears } }
 
