@@ -1,4 +1,4 @@
-local origins = require "origins.origins"
+local origins = require "origins.origin"
 local originsapi = require "lib.thirdparty.OriginsAPI"
 
 local moth = origins.new("snowy:moth")

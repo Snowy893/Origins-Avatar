@@ -1,4 +1,4 @@
-local origins = require "origins.origins"
+local origins = require "origins.origin"
 local squapi = require "lib.thirdparty.SquAPI"
 
 local merling = origins.new("merling")

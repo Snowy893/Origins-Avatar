@@ -1,4 +1,4 @@
-local origins = require "origins.origins"
+local origins = require "origins.origin"
 local util = require "lib.util"
 
 local enderian = origins.new("enderian")

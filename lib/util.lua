@@ -394,10 +394,6 @@ function util.isNight()
     return time >= 13000 and time <= 23000
 end
 
-function events.render(delta)
-    util.delta = delta
-end
-
 ---@param sound Sound
 ---@param position Vector3?
 ---@param pitch number?
@@ -459,6 +455,37 @@ function util.tick()
                     )
                 )
             end
+        end
+    end
+end
+
+---@param particle Minecraft.particleID
+---@param position Vector3?
+---@param radius number?
+---@param velocity Vector3?
+---@param amount integer?
+function util.particleExplosion(particle, position, radius, velocity, amount)
+    position = position or player:getPos()
+    radius = radius or 3
+    velocity = velocity or vec(0.3, 0.3, 0.3)
+    amount = amount or 20
+
+    local calculateVelocity = velocity.x ~= 0 and velocity.y ~= 0 and velocity.z ~= 0
+
+    for _ = 1, amount do
+        local pos = position:add(
+            math.lerp(-radius, radius, math.random()),
+            math.lerp(-radius, radius, math.random()),
+            math.lerp(-radius, radius, math.random())
+        )
+        if calculateVelocity then
+            particles:newParticle(particle, pos,
+                math.lerp(-velocity.x, velocity.x, math.random()),
+                math.lerp(-velocity.y, velocity.y, math.random()),
+                math.lerp(-velocity.z, velocity.z, math.random())
+            )
+        else
+            particles:newParticle(particle, pos, 0, 0, 0)
         end
     end
 end

@@ -1,4 +1,4 @@
-local origins = require "origins.origins"
+local origins = require "origins.origin"
 local originsapi = require "lib.thirdparty.OriginsAPI"
 local squapi = require "lib.thirdparty.SquAPI"
 local util = require "lib.util"
@@ -58,7 +58,7 @@ util.tick:register(function()
     if speed == 130 and velocity >= 0.3 and player:isOnGround() then
         particles:newParticle(
             hasSwiftness and sprintParticleSwiftness or sprintParticle,
-            player:getPos(util.delta),
+            player:getPos(),
             (math.random() - 0.5) / 5, 0, (math.random() - 0.5) / 5
         ):scale(hasSwiftness and 1.3 or 0.96)
     end
