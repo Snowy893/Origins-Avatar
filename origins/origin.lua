@@ -44,7 +44,6 @@ local util = require "lib.util"
 ---@field ALL { [string]: Origin }
 local Origin = {}
 Origin.__index = Origin
-
 Origin.ALL = {}
 
 ---@param toggle boolean
