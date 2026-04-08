@@ -1,26 +1,9 @@
-local util = require "lib.util"
----------------------------------------------------------------------------------
-
--- Replace your name with whatever you like! ("NAME HERE" will put your Minecraft username)
-local name = "NAME HERE"
--- Replace the first, second, and third numbers with red, green, and blue values of your choosing.
--- Use a color picker and get the rgb values from a color you like: https://htmlcolorcodes.com/color-picker/
-local rgb = vec(255, 255, 255)
-
--- Set this to false if you want to use the skin texture in the blockbench model.
-local USE_VANILLA_SKIN = true
-local USE_VANILLA_CAPE_TEXTURE = true
-local ENABLE_CAPE = false
-
--- Set this to false if you want to disable your origin's ambient particles in first person.
-util.RENDER_AMBIENT_FIRST_PERSON = true
-
----------------------------------------------------------------------------------
+local options = require "options"
 
 vanilla_model.PLAYER:setVisible(false)
-models.model.root.Cape:setVisible(ENABLE_CAPE)
+models.model.root.Cape:setVisible(options.ENABLE_CAPE)
 
-if USE_VANILLA_SKIN then
+if options.USE_VANILLA_SKIN then
     for _, part in ipairs({
         models.model.root.Head.Head,
         models.model.root.Head.Hat,
@@ -51,7 +34,7 @@ if USE_VANILLA_SKIN then
     end
 end
 
-if USE_VANILLA_CAPE_TEXTURE then
+if options.USE_VANILLA_CAPE_TEXTURE then
     function events.entity_init()
         if player:hasCape() then
             models.model.root.Cape:setPrimaryTexture("CAPE")
@@ -62,8 +45,8 @@ if USE_VANILLA_CAPE_TEXTURE then
     end
 end
 
-if name == "NAME HERE" then name = "${name}" end
+if options.name == "NAME HERE" then options.name = "${name}" end
 nameplate.ALL:setText(toJson {
-    text = name,
-    color = "#"..vectors.rgbToHex(rgb / 255),
+    text = options.name,
+    color = "#"..vectors.rgbToHex(options.rgb / 255),
 })

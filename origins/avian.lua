@@ -47,8 +47,9 @@ util.tick:register(function()
 
     local pos = player:getPos()
     local fallSpeed = player:getVelocity().y
-    local block = world.getBlockState(pos.x, pos.y - 0.01, pos.z)
-    local inAir = block.id == "minecraft:air" or block.id == "minecraft:cave_air" or block.id == "minecraft:void_air"
+    local inAir = world.getBlockState(pos.x, pos.y - 0.01, pos.z):isAir()
+
+    if fallSpeed > 0 then fallSpeed = 0 end
 
     if inAir then
         animations.model.avian_flap:stop()

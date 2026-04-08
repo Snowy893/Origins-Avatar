@@ -60,12 +60,15 @@ util.newAmbientParticles(flame)
 local strengthSound = sounds["minecraft:entity.blaze.shoot"]
 
 local fireTicks = 0
-function util.tick()
-    if not blazeborn.isOrigin then
+
+function blazeborn.change(toggle)
+    if not toggle then
         fireTicks = 0
         renderer:setRenderFire(true)
-        return 
     end
+end
+
+function blazeborn.tick()
     local lastTick = fireTicks
     fireTicks = fireTicks + (player:isOnFire() and 1 or 0)
     if fireTicks == lastTick then

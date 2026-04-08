@@ -39,16 +39,13 @@ local util = require "lib.util"
 ---@field variants { [string]: Origin.Variant }?
 ---@field squishy SquAPI<T>[]
 ---@field currentVariant string
+---@field numberToVariant { [integer]: string }
+---@field variantToNumber { [string]: integer }
 ---@field ALL { [string]: Origin }
 local Origin = {}
 Origin.__index = Origin
 
 Origin.ALL = {}
-Origin.isOrigin = false
-Origin.sounds = {}
-Origin.variants = {}
-Origin.numberToVariant = {}
-Origin.variantToNumber = {}
 
 ---@param toggle boolean
 function Origin:setEnabled(toggle)
@@ -96,8 +93,8 @@ function Origin:squishyRender(delta, context)
     end
 end
 
----@overload fun(variant: string): number
----@overload fun(variant: number): string
+---@overload fun(variant: string): integer
+---@overload fun(variant: integer): string
 function Origin:convertVariantID(variant)
     if type(variant) == "number" then
         return self.numberToVariant[variant]
@@ -164,7 +161,7 @@ function Origin:register()
                 :title(variant.name)
                 :item(variant.item)
                 :onLeftClick(function()
-                    pings.setVariant(self:convertVariantID(k))
+                    pings.setVariant(self:convertVariantID(k)) ---@diagnostic disable-line: param-type-mismatch
                     config:save(self.id .. "_current_variant", k)
                     self.currentVariant = k
                 end)
@@ -172,7 +169,7 @@ function Origin:register()
 
         util.tick:register(function()
             if self.isOrigin then
-                pings.setVariant(self:convertVariantID(self.currentVariant))
+                pings.setVariant(self:convertVariantID(self.currentVariant)) ---@diagnostic disable-line: param-type-mismatch
             end
         end, 120)
     end
@@ -184,6 +181,13 @@ end
 ---@return Origin
 function Origin.new(id)
     local origin = setmetatable({}, Origin)
+
+    origin.isOrigin = false
+    origin.sounds = {}
+    origin.variants = {}
+    origin.numberToVariant = {}
+    origin.variantToNumber = {}
+    
     origin.id = not id:find(":", 2) and "origins:" .. id or id
     return origin
 end
@@ -207,7 +211,7 @@ end
 ---@param variantID number
 function pings.setVariant(variantID)
     local origin = Origin.current
-    local variant = origin.variants[origin.convertVariantID(variantID)]
+    local variant = origin.variants[origin:convertVariantID(variantID)]
 
     if origin.lastVariant then
         local last = origin.variants[origin.lastVariant]
@@ -236,7 +240,7 @@ function pings.setVariant(variantID)
         end
     end
 
-    origin.lastVariant = origin.convertVariantID(variantID)
+    origin.lastVariant = origin:convertVariantID(variantID)
 end
 
 function events.entity_init()
@@ -265,7 +269,7 @@ function util.tick()
         origin:setEnabled(true)
 
         if origin.currentVariant then
-            pings.setVariant(origin:convertVariantID(origin.currentVariant))
+            pings.setVariant(origin:convertVariantID(origin.currentVariant)) ---@diagnostic disable-line: param-type-mismatch
         end
     end
 
