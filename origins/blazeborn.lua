@@ -1,7 +1,7 @@
-local origins = require "origins.origin"
+local origin = require "origins.origin"
 local util = require "lib.util"
 
-local blazeborn = origins.new("blazeborn")
+local blazeborn = origin.new("blazeborn")
 
 blazeborn.sounds.ambient = sounds["minecraft:entity.blaze.burn"]:volume(0.9):pitch(0.9)
 blazeborn.sounds.hurt = sounds["minecraft:entity.blaze.hurt"]:volume(0.9):pitch(0.9)
@@ -49,8 +49,8 @@ if host:isHost() then
 end
 
 function flame.condition()
-    flame.id = "minecraft:soul_fire_flame" and hasStrength or "minecraft:flame"
-    flame.rate = player:isWet() and 0.5 or (hasStrength and 1.5 or 1)
+    flame.id = hasStrength and "minecraft:soul_fire_flame" or "minecraft:flame"
+    flame.rate = player:isWet() and 0.5 or (player:isOnFire() and 4 or 1)
     return blazeborn.isOrigin
 end
 
@@ -70,15 +70,14 @@ end
 
 function blazeborn.tick()
     local lastTick = fireTicks
+
     fireTicks = fireTicks + (player:isOnFire() and 1 or 0)
+    
     if fireTicks == lastTick then
         fireTicks = 0
     end
 
-    if fireTicks == 0 then
-        renderer:setRenderFire(true)
-    elseif fireTicks == 60 then
-        renderer:setRenderFire(false)
+    if fireTicks == 40 then
         util.playSound(strengthSound)
         util.particleExplosion(flame.id,
             player:getPos():add(0, 1, 0),

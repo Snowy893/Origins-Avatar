@@ -1,27 +1,11 @@
 local options = require "options"
+local util = require "lib.util"
 
 vanilla_model.PLAYER:setVisible(false)
 models.model.root.Cape:setVisible(options.ENABLE_CAPE)
 
 if options.USE_VANILLA_SKIN then
-    for _, part in ipairs({
-        models.model.root.Head.Head,
-        models.model.root.Head.Hat,
-        models.model.root.Body.Body,
-        models.model.root.Body.Jacket,
-        models.model.root.LeftArm.wideLeftArm.LeftArm,
-        models.model.root.LeftArm.wideLeftArm["Left Sleeve"],
-        models.model.root.RightArm.wideRightArm.RightArm,
-        models.model.root.RightArm.wideRightArm["Right Sleeve"],
-        models.model.root.LeftArm.slimLeftArm.SlimLeftArm,
-        models.model.root.LeftArm.slimLeftArm["SlimLeft Sleeve"],
-        models.model.root.RightArm.slimRightArm.SlimRightArm,
-        models.model.root.RightArm.slimRightArm["SlimRight Sleeve"],
-        models.model.root.LeftLeg.LeftLeg,
-        models.model.root.LeftLeg["Left Pants"],
-        models.model.root.RightLeg.RightLeg,
-        models.model.root.RightLeg["Right Pants"],
-    }) do
+    for _, part in ipairs(util.vanillaCubes) do
         part:setPrimaryTexture("SKIN")
     end
 
@@ -45,8 +29,49 @@ if options.USE_VANILLA_CAPE_TEXTURE then
     end
 end
 
-if options.name == "NAME HERE" then options.name = "${name}" end
+if options.NAME == "NAME HERE" then options.NAME = "${name}" end
 nameplate.ALL:setText(toJson {
-    text = options.name,
-    color = "#"..vectors.rgbToHex(options.rgb / 255),
+    text = options.NAME,
+    color = "#"..vectors.rgbToHex(options.RGB / 255),
 })
+
+---@param hand Hand
+local function crouchHandOffset(hand)
+    local rightRot = (hand and hand.RIGHT) and 20 or nil
+    local leftRot = (hand and hand.LEFT) and 20 or nil
+    vanilla_model.RIGHT_ARM:setOffsetRot(rightRot)
+    vanilla_model.LEFT_ARM:setOffsetRot(leftRot)
+end
+
+local lastCrouchHand ---@type Hand
+function util.tick()
+    local crouching = player:isCrouching()
+    local useAction = player:getActiveItem():getUseAction()
+    local leftHanded = player:isLeftHanded()
+
+    local crouchHand ---@type Hand
+    local singleCrouchHand ---@type Hand?
+    local doubleCrouchhand ---@type Hand?
+
+    if crouching then
+        if useAction == "BOW" then
+            doubleCrouchhand = { RIGHT = true, LEFT = true}
+        elseif util.compare(useAction, "TOOT_HORN", "SPEAR", "BLOCK") then
+            local mainHandActive = player:getActiveHand() == "MAIN_HAND"
+            singleCrouchHand = mainHandActive ~= leftHanded and { RIGHT = true } or { LEFT = true }
+        else
+            local rightItem = player:getHeldItem(leftHanded)
+            local leftItem = player:getHeldItem(not leftHanded)
+            if util.crossbowCharged(rightItem) or util.crossbowCharged(leftItem) then
+                doubleCrouchhand = { RIGHT = true, LEFT = true }
+            end
+        end
+    end
+
+    crouchHand = singleCrouchHand or doubleCrouchhand
+
+    if lastCrouchHand ~= crouchHand then
+        crouchHandOffset(crouchHand)
+        lastCrouchHand = crouchHand
+    end
+end

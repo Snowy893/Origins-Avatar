@@ -30,7 +30,7 @@ function utilmt:__newindex(key, value)
     local event
     if type(key) == "string" then event = key:lower() end
     if event and event == "tick" or event == "arrow_tick" then
-        self[event]:register(value)
+        self[event]:register(value, 1)
         return
     end
     rawset(self, key, value)
@@ -56,10 +56,14 @@ end
 
 function events.tick()
     for _, obj in ipairs(tickObjs) do
-        obj.timer = obj.timer + 1
-        if not obj.ticks or obj.timer == obj.ticks then
-            obj.timer = 0
+        if obj.ticks == 1 then
             obj.func()
+        else
+            obj.timer = obj.timer + 1
+            if obj.timer == obj.ticks then
+                obj.timer = 0
+                obj.func()
+            end
         end
     end
     for uuid, arrow in pairs(arrows) do
@@ -67,7 +71,7 @@ function events.tick()
         if entity then
             arrow.timer = arrow.timer + 1
             for _, obj in ipairs(arrowTickObjs) do
-                if not obj.ticks or arrow.timer % obj.ticks == 0 then
+                if arrow.timer % obj.ticks == 0 then
                     arrows[uuid].shouldHide = obj.func(entity)
                 end
             end
@@ -114,6 +118,17 @@ if not table.find then
             end
         end
     end
+end
+
+---@generic T
+---@param value T
+---@param ... T
+---@return T?
+function util.compare(value, ...)
+    for _, v in pairs({ ... }) do
+        if v == value then return value end
+    end
+    return nil
 end
 
 ---@param val1 any
@@ -168,17 +183,6 @@ function util.splitstring(input, separator)
         table.insert(t, str)
     end
     return t
-end
-
----@generic T
----@param value T
----@param ... T
----@return T?
-function util.compare(value, ...)
-    for _, v in pairs({ ... }) do
-        if v == value then return value end
-    end
-    return nil
 end
 
 ---Properly checks if a table is a table, even if it has set its type with `__type`
@@ -312,6 +316,28 @@ function util.checkUseAction(playr, ...)
     end
 
     return false
+end
+
+---@alias Hand {
+---     RIGHT: boolean?,
+---     LEFT: boolean?,
+---}
+
+---@param id string
+---@param playr Player?
+---@return Hand?
+function util.isHolding(id, playr)
+    local p = playr or player
+    local leftHanded = p:isLeftHanded()
+    local rightItem = p:getHeldItem(leftHanded)
+    local leftItem = p:getHeldItem(not leftHanded)
+
+    local hand = {
+        RIGHT = toboolean(rightItem.id:find(id)),
+        LEFT = toboolean(leftItem.id:find(id)),
+    }
+    
+    return next(hand) ~= nil and hand or nil
 end
 
 ---@param action Action
@@ -489,5 +515,24 @@ function util.particleExplosion(particle, position, radius, velocity, amount)
         end
     end
 end
+
+util.vanillaCubes = {
+    models.model.root.Head.Head,
+    models.model.root.Head.Hat,
+    models.model.root.Body.Body,
+    models.model.root.Body.Jacket,
+    models.model.root.LeftArm.wideLeftArm.LeftArm,
+    models.model.root.LeftArm.wideLeftArm["Left Sleeve"],
+    models.model.root.RightArm.wideRightArm.RightArm,
+    models.model.root.RightArm.wideRightArm["Right Sleeve"],
+    models.model.root.LeftArm.slimLeftArm.SlimLeftArm,
+    models.model.root.LeftArm.slimLeftArm["SlimLeft Sleeve"],
+    models.model.root.RightArm.slimRightArm.SlimRightArm,
+    models.model.root.RightArm.slimRightArm["SlimRight Sleeve"],
+    models.model.root.LeftLeg.LeftLeg,
+    models.model.root.LeftLeg["Left Pants"],
+    models.model.root.RightLeg.RightLeg,
+    models.model.root.RightLeg["Right Pants"],
+}
 
 return util

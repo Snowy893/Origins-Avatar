@@ -1,39 +1,38 @@
-local origins = require "origins.origin"
+local origin = require "origins.origin"
 local wobbleLib = require "lib.thirdparty.CMwubLib"
-local options = require "options"
+local options = require "options".SLIME
+local originsapi = require "lib.thirdparty.OriginsAPI"
 
-local slime = origins.new("snowy:slime")
+local slime = origin.new("snowy:slime")
+
+slime.sounds.hurt = sounds["minecraft:entity.slime.hurt"]
 
 local wobble = wobbleLib:newWobbleSetup()
-local wobblePart = options.WOBBLE_PART
+local wobbleParts = options.WOBBLE_PARTS
+local wobbleVelocity = 0.04
+local wobbleCrouchMultiplier = 8
 local wasCrouching
-local wobbleVelocity = 0.12
-local wobbleCrouchMultiplier = 2
 
-local fallSound = "minecraft:entity.slime.jump" ---@type Minecraft.soundID
+local fallSound = "minecraft:entity.slime.squish" ---@type Minecraft.soundID
+local landParticleColor = options.LAND_PARTICLE_COLOR / 255
 local landParticleRadius = vec(0.3, 0, 0.3)
-local wasOnGround = false
 local lastFalling = 0
 
-if options.ENABLE_SLIME_TRANSPARENCY then
-    options.TRANSPARENT_PART:setPrimaryRenderType("TRANSLUCENT_CULL")
-    options.SLIME_TRANSPARENCY = math.clamp(options.SLIME_TRANSPARENCY, 0.3, 1)
-    options.TRANSPARENT_PART:setOpacity(options.SLIME_TRANSPARENCY)
-end
+local leapSound = "minecraft:entity.slime.jump" ---@type Minecraft.soundID
+local wasAirSpeed = false
 
 function slime.tick()
-    local grounded = player:isOnGround()
+    local falling = player:getNbt().FallDistance
+    local pos = player:getPos()
 
-    if grounded and not wasOnGround and lastFalling < -0.5 then
-        local pos = player:getPos()
-
+    if falling < lastFalling and lastFalling > 2.5 and player:isOnGround() then
         for _ = 1, 10 do
             particles:newParticle("minecraft:item_slime",
                 pos.x + math.lerp(-landParticleRadius.x, landParticleRadius.x, math.random()),
                 pos.y + math.lerp(-landParticleRadius.y, landParticleRadius.y, math.random()),
                 pos.z + math.lerp(-landParticleRadius.z, landParticleRadius.z, math.random()),
                 1, 1, 1
-            )
+            ):color(landParticleColor)
         end
 
         if not player:isSneaking() then
@@ -41,8 +40,14 @@ function slime.tick()
         end
     end
 
-    wasOnGround = grounded
-    lastFalling = player:getVelocity().y
+    local isAirSpeed = originsapi.getPowerData(player, "snowy:charged_leap_air_speed_toggle") == 1
+
+    if isAirSpeed and not wasAirSpeed then
+        sounds:playSound(leapSound, pos)
+    end
+
+    lastFalling = falling
+    wasAirSpeed = isAirSpeed
 end
 
 function slime.render()
@@ -51,11 +56,13 @@ function slime.render()
     local crouching = player:isCrouching()
     wobble:update(player:getVelocity().y, true)
 
-    wobblePart:setScale(
-        1 + wobble.wobble * wobbleVelocity / 2,
-        1 - wobble.wobble * wobbleVelocity,
-        1 + wobble.wobble * wobbleVelocity / 2
-    )
+    for _, part in ipairs(wobbleParts) do
+        part:setScale(
+            1 + wobble.wobble * wobbleVelocity / 2,
+            1 - wobble.wobble * wobbleVelocity,
+            1 + wobble.wobble * wobbleVelocity / 2
+        )
+    end
 
     if crouching ~= wasCrouching then
         local vel = (crouching and wobbleVelocity or -wobbleVelocity) * wobbleCrouchMultiplier
@@ -65,7 +72,23 @@ function slime.render()
 end
 
 function slime.change(toggle)
-    if not toggle then wobblePart:setScale() end
+    if toggle then
+        if options.ENABLE_TRANSPARENCY then
+            options.TRANSPARENCY = math.clamp(options.TRANSPARENCY, 0.3, 1)
+            for _, part in ipairs(options.TRANSPARENT_PARTS) do
+                part:setPrimaryRenderType("TRANSLUCENT_CULL")
+                part:setOpacity(options.TRANSPARENCY)
+            end
+        end
+    else
+        for _, part in ipairs(wobbleParts) do
+            part:setScale()
+        end
+        for _, part in ipairs(options.TRANSPARENT_PARTS) do
+            part:setPrimaryRenderType()
+            part:setOpacity(1)
+        end
+    end
 end
 
 slime:register()

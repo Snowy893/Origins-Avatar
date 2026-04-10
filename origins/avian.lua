@@ -1,8 +1,8 @@
-local origins = require "origins.origin"
+local origin = require "origins.origin"
 local squapi = require "lib.thirdparty.SquAPI"
 local util = require "lib.util"
 
-local avian = origins.new("avian")
+local avian = origin.new("avian")
 
 local wings = models.model.root.Body.avianWings:setScale(0.9, 0.9, 0.9)
 local feathers = models.model.root.Head.avianFeathers

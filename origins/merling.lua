@@ -1,7 +1,7 @@
-local origins = require "origins.origin"
+local origin = require "origins.origin"
 local squapi = require "lib.thirdparty.SquAPI"
 
-local merling = origins.new("merling")
+local merling = origin.new("merling")
 
 local headFins = models.model.root.Head.merlingFins
 local backFin = models.model.root.Body.merlingBackFin

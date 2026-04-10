@@ -122,8 +122,7 @@ function Origin:register()
         ambient.pitch = ambient.pitch or ambient.sound:getPitch()
 
         periodical.new(function()
-            ---@diagnostic disable-next-line: param-type-mismatch
-            util.playSound(ambient.sound, ambient.pitch)
+            util.playSound(ambient.sound, ambient.pitch) ---@diagnostic disable-line: param-type-mismatch
         end):condition(function()
             return self.isOrigin and ambient.condition()
         end):timing(ambient.minTicks, ambient.maxTicks)

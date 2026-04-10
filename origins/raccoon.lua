@@ -1,7 +1,7 @@
-local origins = require "origins.origin"
+local origin = require "origins.origin"
 local squapi = require "lib.thirdparty.SquAPI"
 
-local raccoon = origins.new("snowy:raccoon")
+local raccoon = origin.new("snowy:raccoon")
 
 local ears = models.model.root.Head.raccoonEars
 local tail = models.model.root.Body.raccoonTail

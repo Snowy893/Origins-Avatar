@@ -1,9 +1,8 @@
-local origins = require "origins.origin"
+local origin = require "origins.origin"
 local originsapi = require "lib.thirdparty.OriginsAPI"
 local squapi = require "lib.thirdparty.SquAPI"
-local util = require "lib.util"
 
-local horse = origins.new("snowy:horse")
+local horse = origin.new("snowy:horse")
 
 local ears = models.model.root.Head.horseEars
 local tail = models.model.root.Body.horseTail
@@ -46,9 +45,7 @@ horse.squishy = {
     ),
 }
 
-util.tick:register(function()
-    if not horse.isOrigin then return end
-    
+function horse.tick()
     local speed = originsapi.getPowerData(player, "snowy:great_sprint_speed_resource")
 
     local velocity = player:getVelocity().xz:length()
@@ -62,6 +59,6 @@ util.tick:register(function()
             (math.random() - 0.5) / 5, 0, (math.random() - 0.5) / 5
         ):scale(hasSwiftness and 1.3 or 0.96)
     end
-end, 1)
+end
 
 horse:register()

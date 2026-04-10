@@ -1,7 +1,7 @@
-local origins = require "origins.origin"
+local origin = require "origins.origin"
 local util = require "lib.util"
 
-local enderian = origins.new("enderian")
+local enderian = origin.new("enderian")
 
 enderian.sounds.ambient = sounds["minecraft:entity.enderman.ambient"]:volume(0.6)
 enderian.sounds.hurt = sounds["minecraft:entity.enderman.hurt"]:volume(0.6)

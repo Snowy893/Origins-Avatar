@@ -1,7 +1,7 @@
-local origins = require "origins.origin"
+local origin = require "origins.origin"
 local squapi = require "lib.thirdparty.SquAPI"
 
-local feline = origins.new("feline")
+local feline = origin.new("feline")
 
 local ears = models.model.root.Head.felineEars
 local earsTexture = "textures.feline.feline_ears_"
@@ -10,6 +10,7 @@ local tail = models.model.root.Body.felineTail
 local tailTexture = "textures.feline.feline_tail_"
 
 feline.parts = { ears, tail }
+feline.partsCoveredByArmor = { [6] = { ears } }
 
 feline.variants.black = {
     name = "Black",
