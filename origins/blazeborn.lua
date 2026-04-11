@@ -1,4 +1,5 @@
 local origin = require "origins.origin"
+local originsapi = require "lib.thirdparty.OriginsAPI"
 local util = require "lib.util"
 
 local blazeborn = origin.new("blazeborn")
@@ -38,6 +39,7 @@ end
 
 if host:isHost() then
     util.tick:register(function()
+        if not blazeborn.isOrigin then return end
         for _, effect in ipairs(host:getStatusEffects()) do
             if util.getEffect(effect.name) == "effect.minecraft.strength" then
                 pings.hasStrength(true)
@@ -59,25 +61,10 @@ util.newAmbientParticles(flame)
 
 local strengthSound = sounds["minecraft:entity.blaze.shoot"]
 
-local fireTicks = 0
-
-function blazeborn.change(toggle)
-    if not toggle then
-        fireTicks = 0
-        renderer:setRenderFire(true)
-    end
-end
-
+local lastFloat = 0
 function blazeborn.tick()
-    local lastTick = fireTicks
-
-    fireTicks = fireTicks + (player:isOnFire() and 1 or 0)
-    
-    if fireTicks == lastTick then
-        fireTicks = 0
-    end
-
-    if fireTicks == 40 then
+    local float = originsapi.getPowerData(player, "snowy:blaze_float_resource")
+    if float == 100 and lastFloat ~= 100 then
         util.playSound(strengthSound)
         util.particleExplosion(flame.id,
             player:getPos():add(0, 1, 0),
@@ -86,6 +73,7 @@ function blazeborn.tick()
             20
         )
     end
+    lastFloat = float
 end
 
 blazeborn:register()

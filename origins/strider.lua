@@ -37,7 +37,7 @@ local flame = {
 }
 
 function flame.condition()
-    return player:isOnFire()
+    return strider.isOrigin and player:isOnFire()
 end
 
 util.newAmbientParticles(flame)

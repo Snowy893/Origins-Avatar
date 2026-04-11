@@ -9,13 +9,25 @@ if options.USE_VANILLA_SKIN then
         part:setPrimaryTexture("SKIN")
     end
 
+    local modelType
+
     function events.entity_init()
-        local modelType = player:getModelType() == "DEFAULT"
+        modelType = player:getModelType() == "DEFAULT"
         models.model.root.LeftArm.wideLeftArm:setVisible(modelType)
         models.model.root.RightArm.wideRightArm:setVisible(modelType)
         models.model.root.LeftArm.slimLeftArm:setVisible(not modelType)
         models.model.root.RightArm.slimRightArm:setVisible(not modelType)
     end
+
+    util.tick:register(function()
+        if not modelType then
+            modelType = player:getModelType() == "DEFAULT"
+            models.model.root.LeftArm.wideLeftArm:setVisible(modelType)
+            models.model.root.RightArm.wideRightArm:setVisible(modelType)
+            models.model.root.LeftArm.slimLeftArm:setVisible(not modelType)
+            models.model.root.RightArm.slimRightArm:setVisible(not modelType)
+        end
+    end, 30)
 end
 
 if options.USE_VANILLA_CAPE_TEXTURE then

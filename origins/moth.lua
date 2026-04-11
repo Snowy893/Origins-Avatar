@@ -15,11 +15,13 @@ moth.partsCoveredByArmor = { [6] = { antennae } }
 local lastJumps = 3
 function moth.tick()
     local jumps = originsapi.getPowerData(player, "snowy:geppo_jumps")
-    if jumps < lastJumps then
-        animations.model.moth_flap:stop()
-        animations.model.moth_flap:play()
+    if jumps then
+        if jumps < lastJumps then
+            animations.model.moth_flap:stop()
+            animations.model.moth_flap:play()
+        end
+        lastJumps = jumps
     end
-    lastJumps = jumps
 end
 
 moth:register()
