@@ -1,4 +1,5 @@
 local origin = require "origins.origin"
+local originsapi = require "lib.thirdparty.OriginsAPI"
 local squapi = require "lib.thirdparty.SquAPI"
 
 local raccoon = origin.new("snowy:raccoon")
@@ -35,5 +36,18 @@ raccoon.squishy = {
         60
     ),
 }
+
+local lastUseTime
+function raccoon.tick()
+    local spit = originsapi.getPowerData(player, "snowy:spit")
+    local useTime
+    if spit then
+        useTime = spit.LastUseTime
+    end
+    if lastUseTime and useTime and useTime - lastUseTime > 30 then
+        animations.model.spit:play()
+    end
+    lastUseTime = useTime
+end
 
 raccoon:register()

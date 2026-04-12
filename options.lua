@@ -24,9 +24,8 @@ util.RENDER_AMBIENT_FIRST_PERSON = true
 options.SLIME.ENABLE_WOBBLE = true
 options.SLIME.WOBBLE_PARTS = { models.model.root }
 options.SLIME.ENABLE_TRANSPARENCY = true
-options.SLIME.TRANSPARENCY = 0.9 -- Decimal number between 0.3 and 1. 1 is fully opaque.
+options.SLIME.TRANSPARENCY = 0.98 -- Decimal number between 0.3 and 1. 1 is fully opaque.
 options.SLIME.TRANSPARENT_PARTS = util.vanillaCubes
-options.SLIME.TINT = vec(255, 255, 255)
 options.SLIME.LAND_PARTICLE_COLOR = vec(255, 255, 255)
 
 -- STRIDER

@@ -1,17 +1,11 @@
 local origin = require "origins.origin"
-local wobbleLib = require "lib.thirdparty.CMwubLib"
+
 local options = require "options".SLIME
 local originsapi = require "lib.thirdparty.OriginsAPI"
 
 local slime = origin.new("snowy:slime")
 
 slime.sounds.hurt = sounds["minecraft:entity.slime.hurt"]
-
-local wobble = wobbleLib:newWobbleSetup()
-local wobbleParts = options.WOBBLE_PARTS
-local wobbleVelocity = 0.04
-local wobbleCrouchMultiplier = 8
-local wasCrouching
 
 local fallSound = "minecraft:entity.slime.squish" ---@type Minecraft.soundID
 local landParticleColor = options.LAND_PARTICLE_COLOR / 255
@@ -50,24 +44,32 @@ function slime.tick()
     wasAirSpeed = isAirSpeed
 end
 
-function slime.render()
-    if not player:isLoaded() then return end
+if options.ENABLE_WOBBLE then
+    local wobbleLib = require "lib.thirdparty.CMwubLib"
+    local wobble = wobbleLib:newWobbleSetup()
+    local wobbleVelocity = 0.04
+    local wobbleCrouchMultiplier = 8
+    local wasCrouching
 
-    local crouching = player:isCrouching()
-    wobble:update(player:getVelocity().y, true)
+    function slime.render()
+        if not player:isLoaded() then return end
 
-    for _, part in ipairs(wobbleParts) do
-        part:setScale(
-            1 + wobble.wobble * wobbleVelocity / 2,
-            1 - wobble.wobble * wobbleVelocity,
-            1 + wobble.wobble * wobbleVelocity / 2
-        )
-    end
+        local crouching = player:isCrouching()
+        wobble:update(player:getVelocity().y, true)
 
-    if crouching ~= wasCrouching then
-        local vel = (crouching and wobbleVelocity or -wobbleVelocity) * wobbleCrouchMultiplier
-        wobble:setWobble(vel, vel, vel)
-        wasCrouching = crouching
+        for _, part in ipairs(options.WOBBLE_PARTS) do
+            part:setScale(
+                1 + wobble.wobble * wobbleVelocity / 2,
+                1 - wobble.wobble * wobbleVelocity,
+                1 + wobble.wobble * wobbleVelocity / 2
+            )
+        end
+
+        if crouching ~= wasCrouching then
+            local vel = (crouching and wobbleVelocity or -wobbleVelocity) * wobbleCrouchMultiplier
+            wobble:setWobble(vel, vel, vel)
+            wasCrouching = crouching
+        end
     end
 end
 
@@ -81,8 +83,10 @@ function slime.change(toggle)
             end
         end
     else
-        for _, part in ipairs(wobbleParts) do
-            part:setScale()
+        if options.ENABLE_WOBBLE then
+            for _, part in ipairs(options.WOBBLE_PARTS) do
+                part:setScale()
+            end
         end
         for _, part in ipairs(options.TRANSPARENT_PARTS) do
             part:setPrimaryRenderType()
