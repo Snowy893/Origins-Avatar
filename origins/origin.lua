@@ -146,13 +146,8 @@ function Origin:register()
         end
 
         self.currentVariant = config:load(self.id .. "_current_variant")
-
-        if not self.currentVariant then
-            for k, _ in pairs(self.variants) do
-                self.currentVariant = k
-                break
-            end
-        end
+            or self.variants.default
+            or select(1, next(self.variants))
 
         for k, variant in pairs(self.variants) do
             variantActionWheel:newAction()
@@ -160,7 +155,7 @@ function Origin:register()
                 :item(variant.item)
                 :onLeftClick(function()
                     pings.setVariant(self:convertVariantID(k)) ---@diagnostic disable-line: param-type-mismatch
-                    config:save(self.id .. "_current_variant", k)
+                    config:save(self.id.."_current_variant", k)
                     self.currentVariant = k
                 end)
         end

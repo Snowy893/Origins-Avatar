@@ -4,13 +4,13 @@ local squapi = require "lib.thirdparty.SquAPI"
 local feline = origin.new("feline")
 
 local ears = models.model.root.Head.felineEars
-local earsTexture = "textures.feline.feline_ears_"
-
 local tail = models.model.root.Body.felineTail
+local helmet = 6 ---@type Entity.slot
+local earsTexture = "textures.feline.feline_ears_"
 local tailTexture = "textures.feline.feline_tail_"
 
 feline.parts = { ears, tail }
-feline.partsCoveredByArmor = { [6] = { ears } }
+feline.partsCoveredByArmor = { [helmet] = { ears } }
 
 feline.variants.black = {
     name = "Black",

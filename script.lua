@@ -22,13 +22,15 @@ if options.USE_VANILLA_SKIN then
     util.tick:register(function()
         local type = player:getModelType() == "DEFAULT"
         if modelType ~= type then
-            models.model.root.LeftArm.wideLeftArm:setVisible(modelType)
-            models.model.root.RightArm.wideRightArm:setVisible(modelType)
-            models.model.root.LeftArm.slimLeftArm:setVisible(not modelType)
-            models.model.root.RightArm.slimRightArm:setVisible(not modelType)
+            models.model.root.LeftArm.wideLeftArm:setVisible(type)
+            models.model.root.RightArm.wideRightArm:setVisible(type)
+            models.model.root.LeftArm.slimLeftArm:setVisible(not type)
+            models.model.root.RightArm.slimRightArm:setVisible(not type)
         end
         modelType = type
     end, 100)
+else
+
 end
 
 if options.USE_VANILLA_CAPE_TEXTURE then

@@ -7,9 +7,41 @@ local raccoon = origin.new("snowy:raccoon")
 local ears = models.model.root.Head.raccoonEars
 local tail = models.model.root.Body.raccoonTail
 local helmet = 6 ---@type Entity.slot
+local earsTexture = "textures.raccoon.raccoon_ears"
+local tailTexture = "textures.raccoon.raccoon_tail"
 
 raccoon.parts = { ears, tail }
 raccoon.partsCoveredByArmor = { [helmet] = { ears } }
+
+raccoon.variants.tanuki = {
+    name = "Tanuki",
+    item = "minecraft:brown_dye",
+    textureParts = {
+        {
+            part = ears,
+            texture = textures[earsTexture],
+        },
+        {
+            part = tail,
+            texture = textures[tailTexture],
+        },
+    },
+}
+
+raccoon.variants.raccoon = {
+    name = "Raccoon",
+    item = "minecraft:gray_dye",
+    textureParts = {
+        {
+            part = ears,
+            texture = textures[earsTexture.."_alternate"]
+        },
+        {
+            part = tail,
+            texture = textures[tailTexture.."_alternate"],
+        },
+    },
+}
 
 raccoon.squishy = {
     squapi.ear:new(ears.raccoonLeftEar, ears.raccoonRightEar,
