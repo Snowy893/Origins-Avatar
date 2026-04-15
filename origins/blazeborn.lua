@@ -57,7 +57,7 @@ end
 
 function flame.condition()
     flame.id = hasStrength and math.random(4) == 1 and "minecraft:soul_fire_flame" or "minecraft:flame"
-    flame.rate = player:isWet() and 0.5 or (player:isOnFire() and 4 or 1)
+    flame.rate = player:isWet() and 0.5 or (player:isOnFire() and 6 or 1)
     return blazeborn.isOrigin
 end
 
@@ -76,7 +76,7 @@ function rodsInvisible()
 end
 
 function blazeborn.tick()
-    local float = originsapi.getPowerData(player, "snowy:blaze_float_resource")
+    local float = originsapi.getPowerData(player, "snowy:blaze_float_resource") or 0
     local leftHanded = player:isLeftHanded()
     local modelType = models.model.root.RightArm.wideRightArm:getVisible()
     local typeOffset = modelType and 0 or 0.5
@@ -85,12 +85,12 @@ function blazeborn.tick()
     lastFireTicks = fireTicks
 
     if player:isOnFire() then
-        fireTicks = math.min(40, fireTicks + 1)
+        fireTicks = math.min(30, fireTicks + 1)
     else
         fireTicks = math.max(0, fireTicks - 1)
     end
-
-    local onFire = fireTicks > 30 or float > 0
+    
+    local onFire = fireTicks > 20 or float > 0
 
     if float == 100 and lastFloat ~= 100 then
         util.playSound(strengthSound)
@@ -109,11 +109,11 @@ function blazeborn.tick()
     rods:setParentType(leftHanded and "LeftArm" or "RightArm")
     rods:setPos(handedOffset)
 
-    rods:setOpacity((float > 0 or hasStrength) and 0.5 or 0.4)
+    rods:setOpacity((float > 0 or hasStrength) and 0.6 or 0.4)
     
     local floatBonus = float > 0 and 0.15 or 0
     local strengthBonus = hasStrength and 0.15 or 0
-    local speed = 0.8 + floatBonus + strengthBonus
+    local speed = 0.5 + floatBonus + strengthBonus
 
     animations.model.blazeborn_rods:setPlaying(onFire)
         :setSpeed(leftHanded and -speed or speed)

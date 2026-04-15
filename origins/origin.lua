@@ -145,9 +145,13 @@ function Origin:register()
             util.switchPageActions(self.page, variantActionWheel)
         end
 
-        self.currentVariant = config:load(self.id .. "_current_variant")
-            or self.variants.default
-            or select(1, next(self.variants))
+        self.currentVariant = config:load(self.id.."_current_variant")
+        
+        if not self.currentVariant or not self.variants[self.currentVariant] then
+            self.currentVariant = self.variants.default and "default"
+                or select(1, next(self.variants))
+            config:save(self.id.."_current_variant", self.currentVariant)
+        end
 
         for k, variant in pairs(self.variants) do
             variantActionWheel:newAction()
