@@ -1,5 +1,6 @@
 local options = require "options"
 local util = require "lib.util"
+local runLater = require "lib.thirdparty.runLater"
 
 vanilla_model.PLAYER:setVisible(false)
 models.model.root.Cape:setVisible(options.ENABLE_CAPE)
@@ -9,32 +10,21 @@ if options.USE_VANILLA_SKIN then
         part:setPrimaryTexture("SKIN")
     end
 
-    local modelType
-
-    function events.entity_init()
-        modelType = player:getModelType() == "DEFAULT"
-        models.model.root.LeftArm.wideLeftArm:setVisible(modelType)
-        models.model.root.RightArm.wideRightArm:setVisible(modelType)
-        models.model.root.LeftArm.slimLeftArm:setVisible(not modelType)
-        models.model.root.RightArm.slimRightArm:setVisible(not modelType)
+    local function checkArms()
+        local isWide = player:getModelType() == "DEFAULT"
+        models.model.root.LeftArm.wideLeftArm:setVisible(isWide)
+        models.model.root.RightArm.wideRightArm:setVisible(isWide)
+        models.model.root.LeftArm.slimLeftArm:setVisible(not isWide)
+        models.model.root.RightArm.slimRightArm:setVisible(not isWide)
     end
 
-    util.tick:register(function()
-        local type = player:getModelType() == "DEFAULT"
-        if modelType ~= type then
-            models.model.root.LeftArm.wideLeftArm:setVisible(type)
-            models.model.root.RightArm.wideRightArm:setVisible(type)
-            models.model.root.LeftArm.slimLeftArm:setVisible(not type)
-            models.model.root.RightArm.slimRightArm:setVisible(not type)
-        end
-        modelType = type
-    end, 100)
-else
-
+    events.entity_init:register(checkArms)
+    runLater(60, checkArms)
+    util.tick:register(checkArms, 300)
 end
 
 if options.USE_VANILLA_CAPE_TEXTURE then
-    function events.entity_init()
+    local function updateCape()
         if player:hasCape() then
             models.model.root.Cape:setPrimaryTexture("CAPE")
             models.model.root.Elytra:setPrimaryTexture("CAPE")
@@ -42,13 +32,30 @@ if options.USE_VANILLA_CAPE_TEXTURE then
             models.model.root.Elytra:setPrimaryTexture("ELYTRA")
         end
     end
+
+    events.entity_init:register(updateCape)
+    util.tick:register(updateCape, 600)
 end
 
-if options.NAME == "NAME HERE" then options.NAME = "${name}" end
-nameplate.ALL:setText(toJson {
-    text = options.NAME,
-    color = "#"..vectors.rgbToHex(options.RGB / 255),
-})
+function events.entity_init()
+    if options.NAME == "NAME HERE" then options.NAME = "${name}" end
+
+    local plate = {
+        text = options.NAME,
+        color = "#" .. vectors.rgbToHex(options.RGB / 255),
+        hoverEvent = {
+            action = "show_text",
+            contents = player:getName(),
+        },
+    }
+
+    nameplate.ALL:setText(toJson(plate))
+
+    util.tick:register(function()
+        plate.hoverEvent.contents = player:getName()
+        nameplate.ALL:setText(toJson(plate))
+    end, 2400)
+end
 
 ---@param hand Hand
 local function crouchHandOffset(hand)
@@ -58,13 +65,13 @@ local function crouchHandOffset(hand)
     vanilla_model.LEFT_ARM:setOffsetRot(leftRot)
 end
 
-local lastCrouchHand ---@type Hand
+local lastCrouchHand ---@type Hand?
 function util.tick()
     local crouching = player:isCrouching()
     local useAction = player:getActiveItem():getUseAction()
     local leftHanded = player:isLeftHanded()
 
-    local crouchHand ---@type Hand
+    local crouchHand ---@type Hand?
     local singleCrouchHand ---@type Hand?
     local doubleCrouchhand ---@type Hand?
 
