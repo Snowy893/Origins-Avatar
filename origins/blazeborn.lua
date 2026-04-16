@@ -126,7 +126,10 @@ function blazeborn.tick()
         animations.model.blazeborn_rods:setSpeed(leftHanded and -speed or speed)
     end
 
-    rods:setVisible(beenOnFire)
+    if beenOnFire then
+        rods:setVisible(beenOnFire)
+    end
+    
     animations.model.blazeborn_rods:setPlaying(beenOnFire)
 
     if not beenOnFire and lastBeenOnFire then
