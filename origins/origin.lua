@@ -1,6 +1,8 @@
 local periodical = require "lib.periodical"
 local util = require "lib.util"
 
+config:name("Origins-Avatar")
+
 ---@alias Origin.Sounds.Ambient {
 ---     sound: Sound,
 ---     minTicks: integer?,
@@ -29,22 +31,39 @@ local util = require "lib.util"
 ---@generic T
 ---@class Origin
 ---@field id string
----@field page Page
----@field parts ModelPart[]
----@field partsCoveredByArmor { [Entity.slot]: { [integer|Minecraft.itemID]: ModelPart } }
----@field sounds { ambient: (Origin.Sounds.Ambient|Sound)?, hurt: (Origin.Sounds.Hurt|Sound)? }
+---@field page Page?
+---@field parts ModelPart[]?
+---@field partsCoveredByArmor { [Entity.slot]: { [integer|Minecraft.itemID]: ModelPart } }?
+---@field sounds { ambient: (Origin.Sounds.Ambient|Sound)?, hurt: (Origin.Sounds.Hurt|Sound)? }?
 ---@field tick fun()?
 ---@field render Event.Render.func?
 ---@field change fun(toggle: boolean)?
 ---@field variants { [string]: Origin.Variant }?
----@field squishy SquAPI<T>[]
----@field currentVariant string
----@field numberToVariant { [integer]: string }
----@field variantToNumber { [string]: integer }
+---@field squishy SquAPI<T>[]?
+---@field currentVariant string?
+---@field numberToVariant { [integer]: string }?
+---@field variantToNumber { [string]: integer }?
+---@field hasAmbientParticles boolean?
 ---@field ALL { [string]: Origin }
 local Origin = {}
 Origin.__index = Origin
 Origin.ALL = {}
+
+---@param ambient Util.AmbientParticle
+function Origin:newAmbientParticles(ambient)
+    self.hasAmbientParticles = true
+    local cond = ambient.condition
+    if cond then
+        function ambient.condition()
+            return self.isOrigin and cond()
+        end
+    else
+        function ambient.condition()
+            return self.isOrigin
+        end
+    end
+    util.newAmbientParticles(ambient)
+end
 
 ---@param toggle boolean
 function Origin:setEnabled(toggle)
@@ -103,6 +122,17 @@ function Origin:convertVariantID(variant)
 end
 
 function Origin:register()
+    if util.isHost and self.hasAmbientParticles then
+        self.page = self.page or action_wheel:newPage()
+        self.page:newAction()
+            :title("Disable First Person Ambient Particles")
+            :item("minecraft:brush")
+            :onToggle(function(state)
+                util.RENDER_AMBIENT_FIRST_PERSON = not state
+            end)
+            :toggled(config:load("first_person_ambient_particles") or false)
+    end
+
     if self.sounds.hurt then
         if type(self.sounds.hurt) == "Sound" then
             self.sounds.hurt = { sound = self.sounds.hurt }
@@ -137,8 +167,9 @@ function Origin:register()
         end
     end
 
-    if host:isHost() and next(self.variants) ~= nil then
+    if util.isHost and next(self.variants) ~= nil then
         local variantActionWheel = action_wheel:newPage()
+
         if not self.page then
             self.page = variantActionWheel
         else

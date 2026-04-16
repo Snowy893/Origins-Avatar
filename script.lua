@@ -1,5 +1,7 @@
 local options = require "options"
+local name = require "name"
 local util = require "lib.util"
+local colorlib = require "lib.colorlib"
 local runLater = require "lib.thirdparty.runLater"
 
 vanilla_model.PLAYER:setVisible(false)
@@ -38,11 +40,11 @@ if options.USE_VANILLA_CAPE_TEXTURE then
 end
 
 function events.entity_init()
-    if options.NAME == "NAME HERE" then options.NAME = "${name}" end
+    if name.TEXT == "NAME HERE" then name.TEXT = "${name}" end
 
     local plate = {
-        text = options.NAME,
-        color = "#" .. vectors.rgbToHex(options.RGB / 255),
+        text = name.TEXT,
+        color = "#"..vectors.rgbToHex(name.RGB / 255),
         hoverEvent = {
             action = "show_text",
             contents = player:getName(),
@@ -50,6 +52,15 @@ function events.entity_init()
     }
 
     nameplate.ALL:setText(toJson(plate))
+
+    local outline = name.OUTLINE_RGB
+
+    if name.AUTO_OUTLINE then
+        outline = colorlib.lighten(name.RGB, -25)
+    end
+    
+    nameplate.ENTITY:setOutline(name.ENABLE_OUTLINE)
+    nameplate.ENTITY:setOutlineColor(outline / 255)
 
     util.tick:register(function()
         plate.hoverEvent.contents = player:getName()

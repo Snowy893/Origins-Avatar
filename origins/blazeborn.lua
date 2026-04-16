@@ -12,6 +12,8 @@ local rods = models.model.root.blazebornRods
 blazeborn.sounds.ambient = sounds["minecraft:entity.blaze.burn"]:volume(0.9):pitch(0.9)
 blazeborn.sounds.hurt = sounds["minecraft:entity.blaze.hurt"]:volume(0.9):pitch(0.9)
 
+local floatSound = sounds["minecraft:entity.blaze.shoot"]
+
 ---@type Util.AmbientParticle
 local steam = {
     id = client.isModLoaded("farmersdelight")
@@ -24,7 +26,7 @@ local steam = {
 
 function steam.condition()
     steam.rate = player:isInWater() and 5 or 2.5
-    return blazeborn.isOrigin and player:isWet()
+    return player:isWet()
 end
 
 ---@type Util.AmbientParticle
@@ -35,11 +37,11 @@ local flame = {
     velocity = 0.005,
 }
 
-local hasStrength
+local strength
 
----@param toggle boolean
-function pings.hasStrength(toggle)
-    hasStrength = toggle
+---@param level number?
+function pings.strength(level)
+    strength = level
 end
 
 if host:isHost() then
@@ -47,27 +49,27 @@ if host:isHost() then
         if not blazeborn.isOrigin then return end
         for _, effect in ipairs(host:getStatusEffects()) do
             if util.getEffect(effect.name) == "effect.minecraft.strength" then
-                pings.hasStrength(true)
+                pings.strength(effect.amplifier)
             end
             return
         end
-        pings.hasStrength(false)
+        pings.strength()
     end, 80)
 end
 
 function flame.condition()
-    flame.id = hasStrength and math.random(4) == 1 and "minecraft:soul_fire_flame" or "minecraft:flame"
+    flame.id =  strength and (strength > 0 or math.random(4) == 1)
+        and "minecraft:soul_fire_flame"
+        or "minecraft:flame"
     flame.rate = player:isWet() and 0.5 or (player:isOnFire() and 6 or 1)
-    return blazeborn.isOrigin
+    return world.exists()
 end
 
-util.newAmbientParticles(steam)
-util.newAmbientParticles(flame)
-
-local strengthSound = sounds["minecraft:entity.blaze.shoot"]
+blazeborn:newAmbientParticles(steam)
+blazeborn:newAmbientParticles(flame)
 
 local lastFloat = 0
-local lastOnFire = false
+local lastBeenOnFire = false
 local lastFireTicks = 0
 local fireTicks = 0
 
@@ -81,19 +83,24 @@ function blazeborn.tick()
     local modelType = models.model.root.RightArm.wideRightArm:getVisible()
     local typeOffset = modelType and 0 or 0.5
     local handedOffset = leftHanded and (-6 + typeOffset) or (6 - typeOffset)
+    local isOnFire = player:isOnFire()
 
     lastFireTicks = fireTicks
 
-    if player:isOnFire() then
+    if isOnFire then
         fireTicks = math.min(30, fireTicks + 1)
+        renderer:setPrimaryFireTexture(strength and strength > 0
+            and "minecraft:textures/block/soul_fire_1" or nil)
+        renderer:setSecondaryFireTexture(strength and strength > 0
+            and "snowy:textures/block/soul_fire_1" or nil)
     else
         fireTicks = math.max(0, fireTicks - 1)
     end
     
-    local onFire = fireTicks > 20 or float > 0
+    local beenOnFire = fireTicks > 20 or (isOnFire and float > 0)
 
     if float == 100 and lastFloat ~= 100 then
-        util.playSound(strengthSound)
+        util.playSound(floatSound)
         util.particleExplosion(flame.id,
             player:getPos():add(0, 1, 0),
             0,
@@ -106,29 +113,29 @@ function blazeborn.tick()
         animations.model.blazeborn_rods_transition:stop()
     end
 
-    rods:setParentType(leftHanded and "LeftArm" or "RightArm")
-    rods:setPos(handedOffset)
+    if beenOnFire then
+        rods:setParentType(leftHanded and "LeftArm" or "RightArm")
+        rods:setPos(handedOffset)
 
-    rods:setOpacity((float > 0 or hasStrength) and 0.6 or 0.4)
-    
-    local floatBonus = float > 0 and 0.15 or 0
-    local strengthBonus = hasStrength and 0.15 or 0
-    local speed = 0.5 + floatBonus + strengthBonus
+        rods:setOpacity((float > 0 or strength) and 0.6 or 0.5)
 
-    animations.model.blazeborn_rods:setPlaying(onFire)
-        :setSpeed(leftHanded and -speed or speed)
+        local floatBonus = float > 0 and 0.15 or 0
+        local strengthBonus = strength and 0.15 or 0
+        local speed = 0.5 + floatBonus + strengthBonus
 
-    if onFire ~= lastOnFire then
-        if onFire then
-            rods:setVisible(true)
-        else
-            animations.model.blazeborn_rods_transition:stop()
-            animations.model.blazeborn_rods_transition:play()
-        end
+        animations.model.blazeborn_rods:setSpeed(leftHanded and -speed or speed)
+    end
+
+    rods:setVisible(beenOnFire)
+    animations.model.blazeborn_rods:setPlaying(beenOnFire)
+
+    if not beenOnFire and lastBeenOnFire then
+        animations.model.blazeborn_rods_transition:stop()
+        animations.model.blazeborn_rods_transition:play()
     end
 
     lastFloat = float
-    lastOnFire = onFire
+    lastBeenOnFire = beenOnFire
 end
 
 function blazeborn.change(toggle)

@@ -157,8 +157,8 @@ function util.comparetables(tbl1, tbl2)
     return true
 end
 
----@param tbl? { [any]: function }
----@param mtbl? table
+---@param tbl { [any]: function }?
+---@param mtbl table?
 ---@return table
 ---@nodiscard
 function util.functiontable(tbl, mtbl)
@@ -216,6 +216,8 @@ function util.index(tbl)
     end
     return setmetatable(tbl, mt)
 end
+
+------------------------------------------------------------------------------
 
 ---@param key any
 ---@param default any
@@ -516,6 +518,25 @@ function util.particleExplosion(particle, position, radius, velocity, amount)
     end
 end
 
+-- Thanks `manuel_2867` from the Figura Discord!
+do
+    math.dt = 0
+    local st = 0
+    local getst = client.getSystemTime
+    local exp = math.exp
+    -- https://youtu.be/LSNQuFEDOyQ?t=2980
+    function math.expDecay(a, b, decay, dt)
+        return b + (a - b) * exp(-decay * dt)
+    end
+
+    function events.render(_, context)
+        if context ~= "FIRST_PERSON" and context ~= "RENDER" then return end
+        local newst = getst()
+        math.dt = (newst - st) / 1000
+        st = newst
+    end
+end
+
 util.vanillaCubes = {
     models.model.root.Head.Head,
     models.model.root.Head.Hat,
@@ -534,5 +555,7 @@ util.vanillaCubes = {
     models.model.root.RightLeg.RightLeg,
     models.model.root.RightLeg["Right Pants"],
 }
+
+util.isHost = host:isHost()
 
 return util

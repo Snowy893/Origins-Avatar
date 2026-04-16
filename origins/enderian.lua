@@ -16,9 +16,9 @@ local portal = {
 
 function portal.condition()
     portal.rate = player:isWet() and 4 or 2
-    return enderian.isOrigin
+    return world.exists()
 end
 
-util.newAmbientParticles(portal)
+enderian:newAmbientParticles(portal)
 
 enderian:register()
