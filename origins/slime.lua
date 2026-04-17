@@ -57,40 +57,47 @@ if options.ENABLE_WOBBLE then
     local wasCrouching
     local squish = 0
 
-    function slime.render()
+    function slime.render(_, context)
         if not player:isLoaded() then return end
+        local isFirstPerson = context == "FIRST_PERSON"
+        local velocity = isFirstPerson and -wobbleVelocity * 0.75 or wobbleVelocity
 
-        if charge > 4 then
+        if charge > 4 and player:isSneaking() then
             if squish < 30 then
                 squish = math.expDecay(squish, charge, 0.32, math.dt)
             end
+            local vertical = math.expDecay(1, 0.9, 0.32, squish)
             local horizontal = math.expDecay(1, 1.035, 0.32, squish)
             for _, part in ipairs(options.WOBBLE_PARTS) do
-                part:setScale(
-                    horizontal,
-                    math.expDecay(1, 0.9, 0.32, squish),
-                    horizontal
-                )
+                part:setScale(horizontal, vertical, horizontal)
+            end
+            if isFirstPerson then
+                util.getDominantArm():setPos(0, math.expDecay(0, 3.25, 0.32, squish))
+            else
+                models.model.root.RightArm:setPos()
+                models.model.root.LeftArm:setPos()
             end
             return
         end
 
         squish = 0
+        models.model.root.RightArm:setPos()
+        models.model.root.LeftArm:setPos()
         
         wobble:update(player:getVelocity().y, true)
 
         for _, part in ipairs(options.WOBBLE_PARTS) do
             part:setScale(
-                1 + wobble.wobble * wobbleVelocity / 2,
-                1 - wobble.wobble * wobbleVelocity,
-                1 + wobble.wobble * wobbleVelocity / 2
+                1 + wobble.wobble * velocity / 2,
+                1 - wobble.wobble * velocity,
+                1 + wobble.wobble * velocity / 2
             )
         end
 
         local crouching = player:isCrouching()
 
         if crouching ~= wasCrouching then
-            local vel = (crouching and wobbleVelocity or -wobbleVelocity) * wobbleCrouchMultiplier
+            local vel = (crouching and velocity or -velocity) * wobbleCrouchMultiplier
             wobble:setWobble(vel, vel, vel)
             wasCrouching = crouching
         end

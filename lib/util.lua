@@ -537,6 +537,12 @@ do
     end
 end
 
+---@return ModelPart
+---@nodiscard
+function util.getDominantArm()
+    return player:isLeftHanded() and models.model.root.LeftArm or models.model.root.RightArm
+end
+
 util.vanillaCubes = {
     models.model.root.Head.Head,
     models.model.root.Head.Hat,
