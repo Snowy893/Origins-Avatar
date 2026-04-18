@@ -70,8 +70,8 @@ blazeborn:newAmbientParticles(flame)
 
 local lastFloat = 0
 local lastBeenOnFire = false
-local lastFireTicks = 0
 local fireTicks = -10
+local lastFireTicks = 0
 
 function blazeborn.tick()
     local float = originsapi.getPowerData(player, "snowy:blaze_float_resource") or 0
@@ -123,7 +123,7 @@ function blazeborn.tick()
     end
 
     if beenOnFire then
-        rods:setVisible(beenOnFire)
+        rods:setVisible(true)
     end
     
     animations.model.blazeborn_rods:setPlaying(beenOnFire)
@@ -133,7 +133,8 @@ function blazeborn.tick()
         animations.model.blazeborn_rods_transition:play()
     end
 
-    if fireTicks == -10 then
+    if animations.model.blazeborn_rods_transition:getTime() >= 0.49 or fireTicks == -10 then
+        animations.model.blazeborn_rods_transition:setTime(0)
         rods:setVisible(false)
     end
 
