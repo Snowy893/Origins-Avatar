@@ -217,6 +217,14 @@ function util.index(tbl)
     return setmetatable(tbl, mt)
 end
 
+---@param func function
+---@param args ...
+function util.bind(func, args)
+    return function()
+        func(args)
+    end
+end
+
 ------------------------------------------------------------------------------
 
 ---@param key any
@@ -525,6 +533,11 @@ do
     local getst = client.getSystemTime
     local exp = math.exp
     -- https://youtu.be/LSNQuFEDOyQ?t=2980
+    ---@param a number
+    ---@param b number
+    ---@param decay number
+    ---@param dt number
+    ---@return number
     function math.expDecay(a, b, decay, dt)
         return b + (a - b) * exp(-decay * dt)
     end
@@ -535,6 +548,69 @@ do
         math.dt = (newst - st) / 1000
         st = newst
     end
+end
+
+local armorBlacklist = {
+    "cataclysm:",
+}
+
+local armorPivots = {
+    [3] = {
+        models.model.root.LeftLeg.LeftBootPivot,
+        models.model.root.RightLeg.RightBootPivot,
+    },
+    [4] = {
+        models.model.root.LeftLeg.LeftLeggingPivot,
+        models.model.root.RightLeg.RightLeggingPivot,
+        models.model.root.Body.LeggingsPivot,
+    },
+    [5] = {
+        models.model.root.Body.ChestplatePivot,
+        models.model.root.LeftArm.LeftShoulderPivot,
+        models.model.root.RightArm.RightShoulderPivot,
+    },
+    [6] = {
+        models.model.root.Head.HelmetPivot,
+        models.model.root.Head.HelmetItemPivot,
+    },
+}
+
+local pivotsDisabled = {}
+local armorCache = {}
+
+function util.tick()
+    for i = 3, 6 do
+        local armor = player:getItem(i)
+
+        if not (armor and armor.id and armorCache[i] and armorCache[i] == armor.id) then
+            armorCache[i] = armor and armor.id or nil
+
+            local disableArmorPivots = false
+
+            if armor and armor.id and armor.id ~= "minecraft:air" then
+                for _, v in ipairs(armorBlacklist) do
+                    if armor and armor.id and armor.id:find(v) then disableArmorPivots = true end
+                end
+            end
+
+            pivotsDisabled[i] = disableArmorPivots or nil
+
+            if disableArmorPivots then
+                for _, part in ipairs(armorPivots[i]) do
+                    part:setVisible(false):setParentType("None")
+                end
+            else
+                for _, part in ipairs(armorPivots[i]) do
+                    part:setParentType(part:getName()):setVisible(true)
+                end
+            end
+        end
+    end
+end
+
+---@return { [Entity.slot]: true? }
+function util.getArmorPivotsDisabled()
+    return pivotsDisabled
 end
 
 ---@return ModelPart

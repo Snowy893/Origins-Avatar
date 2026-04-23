@@ -52,27 +52,45 @@ end
 if options.ENABLE_WOBBLE then
     local wobbleLib = require "lib.thirdparty.CMwubLib"
     local wobble = wobbleLib:newWobbleSetup()
+    local anyArmorPivotDisabled = false
     local wobbleVelocity = 0.04
     local wobbleCrouchMultiplier = 8
     local wasCrouching
-    local squish = 0
+    local verticalSquish = 0.9
+    local horizontalSquish = 1.035
+    local squishDelta = 0
+
+    function util.tick()
+        anyArmorPivotDisabled = next(util.getArmorPivotsDisabled()) ~= nil
+    end
 
     function slime.render(_, context)
         if not player:isLoaded() then return end
         local isFirstPerson = context == "FIRST_PERSON"
-        local velocity = isFirstPerson and -wobbleVelocity * 0.75 or wobbleVelocity
+        local _velocity = anyArmorPivotDisabled and not isFirstPerson and wobbleVelocity / 8 or wobbleVelocity
+        local velocity = isFirstPerson and -_velocity * 0.75 or _velocity
 
-        if charge > 4 and player:isSneaking() then
-            if squish < 30 then
-                squish = math.expDecay(squish, charge, 0.32, math.dt)
+        if charge > 2 and player:isSneaking() then
+            if squishDelta < 30 then
+                squishDelta = math.expDecay(squishDelta, charge, 0.32, math.dt)
             end
-            local vertical = math.expDecay(1, 0.9, 0.32, squish)
-            local horizontal = math.expDecay(1, 1.035, 0.32, squish)
+            local vertical = math.expDecay(
+                1,
+                anyArmorPivotDisabled and verticalSquish + 0.08 or verticalSquish,
+                0.32,
+                squishDelta
+            )
+            local horizontal = math.expDecay(
+                1,
+                anyArmorPivotDisabled and horizontalSquish - 0.025 or horizontalSquish,
+                0.32,
+                squishDelta
+            )
             for _, part in ipairs(options.WOBBLE_PARTS) do
                 part:setScale(horizontal, vertical, horizontal)
             end
             if isFirstPerson then
-                util.getDominantArm():setPos(0, math.expDecay(0, 3.25, 0.32, squish))
+                util.getDominantArm():setPos(0, math.expDecay(0, 2, 0.32, squishDelta))
             else
                 models.model.root.RightArm:setPos()
                 models.model.root.LeftArm:setPos()
@@ -80,7 +98,7 @@ if options.ENABLE_WOBBLE then
             return
         end
 
-        squish = 0
+        squishDelta = 0
         models.model.root.RightArm:setPos()
         models.model.root.LeftArm:setPos()
         
@@ -97,8 +115,8 @@ if options.ENABLE_WOBBLE then
         local crouching = player:isCrouching()
 
         if crouching ~= wasCrouching then
-            local vel = (crouching and velocity or -velocity) * wobbleCrouchMultiplier
-            wobble:setWobble(vel, vel, vel)
+            local crouchVelocity = (crouching and velocity or -velocity) * wobbleCrouchMultiplier
+            wobble:setWobble(crouchVelocity, crouchVelocity, crouchVelocity)
             wasCrouching = crouching
         end
     end
