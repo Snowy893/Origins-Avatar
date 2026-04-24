@@ -11,9 +11,6 @@ options.USE_VANILLA_SKIN = true
 options.USE_VANILLA_CAPE_TEXTURE = true
 options.ENABLE_CAPE = false
 
--- Set this to false if you want to disable your origin's ambient particles in first person.
-util.RENDER_AMBIENT_FIRST_PERSON = true
-
 -- SLIME
 options.SLIME.ENABLE_WOBBLE = true
 options.SLIME.WOBBLE_PARTS = { models.model.root }

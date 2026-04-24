@@ -15,7 +15,7 @@ moth.partsCoveredByArmor = { [helmet] = { antennae } }
 
 local lastJumps = 3
 function moth.tick()
-    local jumps = originsapi.getPowerData(player, "snowy:geppo_jumps")
+    local jumps = originsapi.getPowerData(player, "snowy:geppo_jumps") --[[@as integer?]]
     if jumps then
         if jumps < lastJumps then
             animations.model.moth_flap:stop()

@@ -550,73 +550,76 @@ do
     end
 end
 
-local armorBlacklist = {
-    "cataclysm:",
-}
-
-local armorPivots = {
-    [3] = {
-        models.model.root.LeftLeg.LeftBootPivot,
-        models.model.root.RightLeg.RightBootPivot,
-    },
-    [4] = {
-        models.model.root.LeftLeg.LeftLeggingPivot,
-        models.model.root.RightLeg.RightLeggingPivot,
-        models.model.root.Body.LeggingsPivot,
-    },
-    [5] = {
-        models.model.root.Body.ChestplatePivot,
-        models.model.root.LeftArm.LeftShoulderPivot,
-        models.model.root.RightArm.RightShoulderPivot,
-    },
-    [6] = {
-        models.model.root.Head.HelmetPivot,
-        models.model.root.Head.HelmetItemPivot,
-    },
-}
-
-local pivotsDisabled = {}
-local armorCache = {}
-
-function util.tick()
-    for i = 3, 6 do
-        local armor = player:getItem(i)
-
-        if not (armor and armor.id and armorCache[i] and armorCache[i] == armor.id) then
-            armorCache[i] = armor and armor.id or nil
-
-            local disableArmorPivots = false
-
-            if armor and armor.id and armor.id ~= "minecraft:air" then
-                for _, v in ipairs(armorBlacklist) do
-                    if armor and armor.id and armor.id:find(v) then disableArmorPivots = true end
-                end
-            end
-
-            pivotsDisabled[i] = disableArmorPivots or nil
-
-            if disableArmorPivots then
-                for _, part in ipairs(armorPivots[i]) do
-                    part:setVisible(false):setParentType("None")
-                end
-            else
-                for _, part in ipairs(armorPivots[i]) do
-                    part:setParentType(part:getName()):setVisible(true)
-                end
-            end
-        end
-    end
-end
-
----@return { [Entity.slot]: true? }
-function util.getArmorPivotsDisabled()
-    return pivotsDisabled
-end
-
 ---@return ModelPart
 ---@nodiscard
 function util.getDominantArm()
     return player:isLeftHanded() and models.model.root.LeftArm or models.model.root.RightArm
+end
+
+---@param playr Player?
+---@return boolean
+function util.isWearingArmor(playr)
+    local p = playr or player
+    for i = 3, 6 do
+        local armor = p:getItem(i)
+        if armor and armor.id ~= "minecraft:air" then return true end
+    end
+    return false
+end
+
+---@alias Util.Curios.slot
+---| "head"
+---| "necklace"
+---| "back"
+---| "rings"
+---| "hands"
+---| "waist"
+---| "belt"
+---| "talisman"
+---| "feet"
+---| "charm"
+
+---@alias Util.Curios.inventory { [Util.Curios.slot]: {
+---     items: ItemStack[]?,
+---     visible: boolean,
+---}? }
+
+---@param playr Player?
+---@return Util.Curios.inventory?
+function util.getCuriosInventory(playr)
+    if not client.isModLoaded("curios") then return nil end
+    local nbt = (playr or player):getNbt()
+    local curios = nbt.ForgeCaps
+        and nbt.ForgeCaps["curios:inventory"]
+        and nbt.ForgeCaps["curios:inventory"].Curios
+    if not curios then return nil end
+    local inv = {}
+    for _, v in ipairs(curios) do
+        inv[v.Identifier] = {
+            items = v.StacksHandler.Stacks.Items,
+            visible = v.StacksHandler.Renders.Renders[1]
+                and v.StacksHandler.Renders.Renders[1].Render == 1,
+        }
+    end
+    return next(inv) ~= nil and inv or nil
+end
+
+---@param playr Player?
+---@return boolean
+function util.isWearingCurios(playr)
+    if not client.isModLoaded("curios") then return false end
+    local nbt = (playr or player):getNbt()
+    local curios = nbt.ForgeCaps
+        and nbt.ForgeCaps["curios:inventory"]
+        and nbt.ForgeCaps["curios:inventory"].Curios
+    if not curios then return false end
+    for _, v in ipairs(curios) do
+        local items = v.StacksHandler.Stacks.Items
+        local visible = v.StacksHandler.Renders.Renders[1]
+            and v.StacksHandler.Renders.Renders[1].Render == 1
+        if visible and next(items) ~= nil then return true end
+    end
+    return false
 end
 
 util.vanillaCubes = {

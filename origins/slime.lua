@@ -52,22 +52,22 @@ end
 if options.ENABLE_WOBBLE then
     local wobbleLib = require "lib.thirdparty.CMwubLib"
     local wobble = wobbleLib:newWobbleSetup()
-    local anyArmorPivotDisabled = false
     local wobbleVelocity = 0.04
     local wobbleCrouchMultiplier = 8
     local wasCrouching
     local verticalSquish = 0.9
     local horizontalSquish = 1.035
     local squishDelta = 0
+    local wearingArmor
 
-    function util.tick()
-        anyArmorPivotDisabled = next(util.getArmorPivotsDisabled()) ~= nil
+    function slime.tick()
+        wearingArmor = util.isWearingArmor() or util.isWearingCurios()
     end
 
     function slime.render(_, context)
         if not player:isLoaded() then return end
         local isFirstPerson = context == "FIRST_PERSON"
-        local _velocity = anyArmorPivotDisabled and not isFirstPerson and wobbleVelocity / 8 or wobbleVelocity
+        local _velocity = wearingArmor and not isFirstPerson and wobbleVelocity / 8 or wobbleVelocity
         local velocity = isFirstPerson and -_velocity * 0.75 or _velocity
 
         if charge > 2 and player:isSneaking() then
@@ -76,13 +76,13 @@ if options.ENABLE_WOBBLE then
             end
             local vertical = math.expDecay(
                 1,
-                anyArmorPivotDisabled and verticalSquish + 0.08 or verticalSquish,
+                wearingArmor and verticalSquish + 0.08 or verticalSquish,
                 0.32,
                 squishDelta
             )
             local horizontal = math.expDecay(
                 1,
-                anyArmorPivotDisabled and horizontalSquish - 0.025 or horizontalSquish,
+                wearingArmor and horizontalSquish - 0.025 or horizontalSquish,
                 0.32,
                 squishDelta
             )

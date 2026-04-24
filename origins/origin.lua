@@ -1,8 +1,6 @@
 local periodical = require "lib.periodical"
 local util = require "lib.util"
 
-config:name("Origins-Avatar")
-
 ---@alias Origin.Sounds.Ambient {
 ---     sound: Sound,
 ---     minTicks: integer?,
@@ -48,6 +46,15 @@ config:name("Origins-Avatar")
 local Origin = {}
 Origin.__index = Origin
 Origin.ALL = {}
+
+function Origin:__newindex(key, value)
+    if type(key) == "string" and key:lower() == "tick" then
+        if not self.tickObjs then self.tickObjs = {} end
+        table.insert(self.tickObjs, value)
+        return
+    end
+    rawset(self, key, value)
+end
 
 ---@param ambient Util.AmbientParticle
 function Origin:newAmbientParticles(ambient)
@@ -124,13 +131,16 @@ end
 function Origin:register()
     if util.isHost and self.hasAmbientParticles then
         self.page = self.page or action_wheel:newPage()
+        local bool = config:load("first_person_ambient_particles") or false
         self.page:newAction()
             :title("Disable First Person Ambient Particles")
             :item("minecraft:brush")
             :onToggle(function(state)
+                config:save("first_person_ambient_particles", state)
                 util.RENDER_AMBIENT_FIRST_PERSON = not state
             end)
-            :toggled(config:load("first_person_ambient_particles") or false)
+            :toggled(bool)
+            .toggle(bool)
     end
 
     if self.sounds.hurt then
@@ -305,7 +315,9 @@ function util.tick()
 
     origin:squishyTick()
 
-    if origin.tick then origin.tick() end
+    if origin.tickObjs then
+        for _, obj in ipairs(origin.tickObjs) do obj() end
+    end
 
     Origin.last = origin
 end

@@ -126,11 +126,13 @@ function blazeborn.tick()
         rods:setVisible(true)
     end
     
-    animations.model.blazeborn_rods:setPlaying(beenOnFire)
+    animations.model.blazeborn_rods:setPlaying(
+        rods:getVisible() and not animations.model.blazeborn_rods_transition:isPlaying()
+    )
 
     if not beenOnFire and lastBeenOnFire then
         animations.model.blazeborn_rods_transition:stop()
-        animations.model.blazeborn_rods_transition:play()
+        animations.model.blazeborn_rods_transition:priority(1):play()
     end
 
     if animations.model.blazeborn_rods_transition:getTime() >= 0.49 or fireTicks == -10 then
