@@ -16,6 +16,12 @@ local CuriosLib = {}
 ---| "feet"
 ---| "charm"
 
+---@alias Curios.dropRule
+---| "DEFAULT"
+---| "ALWAYS_DROP"
+---| "ALWAYS_KEEP"
+---| "DESTROY"
+
 ---@alias Curios.Data {
 ---     Identifier: Curios.slotID,
 ---     StacksHandler: {
@@ -24,17 +30,17 @@ local CuriosLib = {}
 ---             Size: integer,
 ---         },
 ---         Visible: 0|1, -- Doesn't actually change when visibility is toggled
----         HasCosmetic: 0|1, -- Doesn't actually change when visibility is toggled,
+---         HasCosmetic: 0|1, -- Doesn't actually change when visibility is toggled
 ---         Stacks: {
 ---             Items: ItemStack[],
 ---             Size: integer,
 ---         },
 ---         SavedBaseSize: integer,
----         DropRule: string,
----         RenderToggle: 0|1, -- Doesn't actually change when visibility is toggled,
+---         DropRule: Curios.dropRule,
+---         RenderToggle: 0|1, -- Doesn't actually change when visibility is toggled
 ---         Renders: {
 ---             Renders: ({
----                 Render: (0|1), -- Actually changes when visibility is toggled,
+---                 Render: (0|1), -- Actually changes when visibility is toggled
 ---                 Slot: integer,
 ---             }?)[],
 ---             Size: integer,
@@ -42,22 +48,86 @@ local CuriosLib = {}
 ---     },
 ---}[]
 
----@alias Curios.Inventory { [Curios.slotID]: {
+---@alias Curios.Slot {
 ---     items: ItemStack[]?,
----     visible: boolean,
----}}
+---     visible: boolean, -- True if visibility is on, false if visibility is off or if no items are equipped in the slot.
+---     dropRule: Curios.dropRule,
+---}
 
----@param playr Player?
----@return Curios.Inventory?
-function CuriosLib.getInventory(playr)
+---@alias Curios.Inventory { [Curios.slotID]: Curios.Slot }
+
+---@param entity Entity
+---@return Curios.Data?
+function CuriosLib.getCuriosData(entity)
     if not client.isModLoaded("curios") then return nil end
-
-    local nbt = (playr or player):getNbt()
+    local nbt = entity:getNbt()
     ---@type Curios.Data?
-    local curios = nbt.ForgeCaps
+    return nbt.ForgeCaps
         and nbt.ForgeCaps["curios:inventory"]
         and nbt.ForgeCaps["curios:inventory"].Curios
+        or nil
+end
 
+---@param entity Entity? -- Uses `player` by default
+---@return boolean
+function CuriosLib.wearingAny(entity)
+    local curios = CuriosLib.getCuriosData(entity or player)
+    if not curios then return false end
+
+    for _, v in ipairs(curios) do
+        local items = v.StacksHandler.Stacks.Items
+        if next(items) ~= nil then
+            local toggled = false
+
+            for _, render in ipairs(v.StacksHandler.Renders.Renders) do
+                if render.Render == 1 then
+                    toggled = true
+                end
+            end
+
+            if toggled then return true end
+        end
+    end
+    return false
+end
+
+---@param slot Curios.slotID
+---@param entity Entity? -- Uses `player` by default
+---@return Curios.Slot?
+function CuriosLib.getSlot(slot, entity)
+    local curios = CuriosLib.getCuriosData(entity or player)
+    if not curios then return nil end
+
+    for _, v in ipairs(curios) do
+        if v.Identifier == slot then
+            ---@type Curios.Slot
+            local slotData = {
+                items = v.StacksHandler.Stacks.Items,
+                dropRule = v.StacksHandler.DropRule,
+            }
+
+            local toggled = false
+
+            for _, render in ipairs(v.StacksHandler.Renders.Renders) do
+                if render.Render == 1 then
+                    toggled = true
+                    break
+                end
+            end
+
+            slotData.visible = toggled and next(slotData.items) ~= nil
+
+            return slotData
+        end
+    end
+
+    return nil
+end
+
+---@param entity Entity? -- Uses `player` by default
+---@return Curios.Inventory?
+function CuriosLib.getInventory(entity)
+    local curios = CuriosLib.getCuriosData(entity or player)
     if not curios then return nil end
 
     local inv = {}
@@ -68,6 +138,7 @@ function CuriosLib.getInventory(playr)
 
         slot.items = v.StacksHandler.Stacks.Items
         slot.visible = false
+        slot.dropRule = v.StacksHandler.DropRule
 
         for _, render in ipairs(v.StacksHandler.Renders.Renders) do
             if render.Render == 1 then
@@ -78,41 +149,6 @@ function CuriosLib.getInventory(playr)
     end
 
     return next(inv) ~= nil and inv or nil
-end
-
----@param slot Curios.slotID? -- Checks for the specified slot if not nil, otherwise checks any curios slot.
----@param playr Player?
----@return boolean -- True if the player is wearing an item in a curios slot and that slot is visible.
-function CuriosLib.isWearing(slot, playr)
-    if not client.isModLoaded("curios") then return false end
-
-    local nbt = (playr or player):getNbt()
-    ---@type Curios.Data?
-    local curios = nbt.ForgeCaps
-        and nbt.ForgeCaps["curios:inventory"]
-        and nbt.ForgeCaps["curios:inventory"].Curios
-
-    if not curios then return false end
-
-    for _, v in ipairs(curios) do
-        if not slot or v.Identifier == slot then
-            local items = v.StacksHandler.Stacks.Items
-            local toggled = false
-
-            for _, render in ipairs(v.StacksHandler.Renders.Renders) do
-                if render.Render == 1 then
-                    toggled = true
-                    break
-                end
-            end
-
-            local visible = toggled and next(items) ~= nil
-
-            if visible or slot then return visible end
-        end
-    end
-
-    return false
 end
 
 return CuriosLib

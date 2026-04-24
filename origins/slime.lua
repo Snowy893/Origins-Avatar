@@ -62,7 +62,7 @@ if options.ENABLE_WOBBLE then
     local wearingArmor
 
     function slime.tick()
-        wearingArmor = util.isWearingArmor() or curioslib.isWearing()
+        wearingArmor = util.isWearingArmor() or curioslib.wearingAny()
     end
 
     function slime.render(_, context)
