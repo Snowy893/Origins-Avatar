@@ -1,6 +1,6 @@
 local origin = require "origins.origin"
 local util = require "lib.util"
-local curioslib = require "lib.curioslib"
+local curiosapi = require "lib.curiosapiapi"
 
 local options = require "options".SLIME
 local originsapi = require "lib.thirdparty.OriginsAPI"
@@ -62,7 +62,7 @@ if options.ENABLE_WOBBLE then
     local wearingArmor
 
     function slime.tick()
-        wearingArmor = util.isWearingArmor() or curioslib.wearingAny()
+        wearingArmor = util.isWearingArmor() or curiosapi.wearingAny()
     end
 
     function slime.render(_, context)
