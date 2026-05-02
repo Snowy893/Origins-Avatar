@@ -13,10 +13,10 @@ local tailTexture = "textures.raccoon.raccoon_tail"
 raccoon.parts = { ears, tail }
 raccoon.partsCoveredByArmor = { [helmet] = { ears } }
 
-raccoon.variants.tanuki = {
+raccoon:addVariant({
     name = "Tanuki",
     item = "minecraft:brown_dye",
-    textureParts = {
+    parts = {
         {
             part = ears,
             texture = textures[earsTexture],
@@ -26,22 +26,22 @@ raccoon.variants.tanuki = {
             texture = textures[tailTexture],
         },
     },
-}
+})
 
-raccoon.variants.raccoon = {
+raccoon:addVariant({
     name = "Raccoon",
     item = "minecraft:gray_dye",
-    textureParts = {
+    parts = {
         {
             part = ears,
-            texture = textures[earsTexture.."_alternate"]
+            texture = textures[earsTexture .. "_alternate"],
         },
         {
             part = tail,
-            texture = textures[tailTexture.."_alternate"],
+            texture = textures[tailTexture .. "_alternate"],
         },
     },
-}
+})
 
 raccoon.squishy = {
     squapi.ear:new(ears.raccoonLeftEar, ears.raccoonRightEar,

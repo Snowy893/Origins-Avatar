@@ -12,50 +12,50 @@ local tailTexture = "textures.feline.feline_tail_"
 feline.parts = { ears, tail }
 feline.partsCoveredByArmor = { [helmet] = { ears } }
 
-feline.variants.black = {
+feline:addVariant({
     name = "Black",
     item = "minecraft:black_wool",
-    textureParts = {
+    parts = {
         {
-            part = ears, 
-            texture = textures[earsTexture.."black"],
+            part = ears,
+            texture = textures[earsTexture .. "black"],
         },
         {
             part = tail,
-            texture = textures[tailTexture.."black"]
-        }
+            texture = textures[tailTexture .. "black"],
+        },
     },
-}
+})
 
-feline.variants.red = {
+feline:addVariant({
     name = "Ginger",
     item = "minecraft:orange_wool",
-    textureParts = {
+    parts = {
         {
             part = ears,
-            texture = textures[earsTexture.."red"],
+            texture = textures[earsTexture .. "red"],
         },
         {
             part = tail,
-            texture = textures[tailTexture.."red"],
-        },
-    }
-}
-
-feline.variants.white = {
-    name = "White",
-    item = "minecraft:white_wool",
-    textureParts = {
-        {
-            part = ears,
-            texture = textures[earsTexture.."white"]
-        },
-        {
-            part = tail,
-            texture = textures[tailTexture.."white"]
+            texture = textures[tailTexture .. "red"],
         },
     },
-}
+})
+
+feline:addVariant({
+    name = "White",
+    item = "minecraft:white_wool",
+    parts = {
+        {
+            part = ears,
+            texture = textures[earsTexture .. "white"],
+        },
+        {
+            part = tail,
+            texture = textures[tailTexture .. "white"],
+        },
+    },
+})
 
 feline.squishy = {
     squapi.ear:new(ears.felineLeftEar, ears.felineRightEar,

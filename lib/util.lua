@@ -559,9 +559,8 @@ end
 ---@param playr Player?
 ---@return boolean
 function util.isWearingArmor(playr)
-    local p = playr or player
     for i = 3, 6 do
-        local armor = p:getItem(i)
+        local armor = (playr or player):getItem(i)
         if armor and armor.id ~= "minecraft:air" then return true end
     end
     return false
@@ -585,7 +584,5 @@ util.vanillaCubes = {
     models.model.root.RightLeg.RightLeg,
     models.model.root.RightLeg["Right Pants"],
 }
-
-util.isHost = host:isHost()
 
 return util

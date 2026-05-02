@@ -14,14 +14,13 @@ local util = require "lib.util"
 ---     pitch: number?,
 ---}
 
----@alias Origin.Variant.TexturePart {
+---@alias Origin.Variant.Part {
 ---     part: ModelPart,
----     texture: Texture,
+---     texture: Texture?,
 ---}
 
 ---@alias Origin.Variant {
----     textureParts: Origin.Variant.TexturePart[]?,
----     parts: ModelPart[]?,
+---     parts: Origin.Variant.Part[]?,
 ---     name: string,
 ---     item: ItemStack|Minecraft.itemID,
 ---}
@@ -36,11 +35,9 @@ local util = require "lib.util"
 ---@field tick fun()?
 ---@field render Event.Render.func?
 ---@field change fun(toggle: boolean)?
----@field variants { [string]: Origin.Variant }?
+---@field variants Origin.Variant[]?
 ---@field squishy SquAPI<T>[]?
----@field currentVariant string?
----@field numberToVariant { [integer]: string }?
----@field variantToNumber { [string]: integer }?
+---@field currentVariant integer?
 ---@field hasAmbientParticles boolean?
 ---@field ALL { [string]: Origin }
 local Origin = {}
@@ -70,6 +67,12 @@ function Origin:newAmbientParticles(ambient)
         end
     end
     util.newAmbientParticles(ambient)
+end
+
+---@param variant Origin.Variant
+function Origin:addVariant(variant)
+    if not self.variants then self.variants = {} end
+    table.insert(self.variants, variant)
 end
 
 ---@param toggle boolean
@@ -118,18 +121,8 @@ function Origin:squishyRender(delta, context)
     end
 end
 
----@overload fun(variant: string): integer
----@overload fun(variant: integer): string
-function Origin:convertVariantID(variant)
-    if type(variant) == "number" then
-        return self.numberToVariant[variant]
-    else
-        return self.variantToNumber[variant]
-    end
-end
-
 function Origin:register()
-    if util.isHost and self.hasAmbientParticles then
+    if host:isHost() and self.hasAmbientParticles then
         self.page = self.page or action_wheel:newPage()
         local bool = config:load("first_person_ambient_particles") or false
         self.page:newAction()
@@ -169,15 +162,7 @@ function Origin:register()
             :register()
     end
 
-    if next(self.variants) ~= nil then
-        for k, _ in pairs(self.variants) do
-            local n = #self.numberToVariant + 1
-            self.numberToVariant[n] = k
-            self.variantToNumber[k] = n
-        end
-    end
-
-    if util.isHost and next(self.variants) ~= nil then
+    if host:isHost() and self.variants then
         local variantActionWheel = action_wheel:newPage()
 
         if not self.page then
@@ -188,26 +173,25 @@ function Origin:register()
 
         self.currentVariant = config:load(self.id.."_current_variant")
         
-        if not self.currentVariant or not self.variants[self.currentVariant] then
-            self.currentVariant = self.variants.default and "default"
-                or select(1, next(self.variants))
+        if not self.currentVariant or not self.variants[self.currentVariant] or type(self.currentVariant) ~= "number" then
+            self.currentVariant = 1
             config:save(self.id.."_current_variant", self.currentVariant)
         end
 
-        for k, variant in pairs(self.variants) do
+        for i, variant in ipairs(self.variants) do
             variantActionWheel:newAction()
                 :title(variant.name)
                 :item(variant.item)
                 :onLeftClick(function()
-                    pings.setVariant(self:convertVariantID(k)) ---@diagnostic disable-line: param-type-mismatch
-                    config:save(self.id.."_current_variant", k)
-                    self.currentVariant = k
+                    pings.setVariant(i) ---@diagnostic disable-line: param-type-mismatch
+                    config:save(self.id.."_current_variant", i)
+                    self.currentVariant = i
                 end)
         end
 
         util.tick:register(function()
             if self.isOrigin then
-                pings.setVariant(self:convertVariantID(self.currentVariant)) ---@diagnostic disable-line: param-type-mismatch
+                pings.setVariant(self.currentVariant) ---@diagnostic disable-line: param-type-mismatch
             end
         end, 120)
     end
@@ -222,7 +206,6 @@ function Origin.new(id)
 
     origin.isOrigin = false
     origin.sounds = {}
-    origin.variants = {}
     origin.numberToVariant = {}
     origin.variantToNumber = {}
     
@@ -246,39 +229,31 @@ local function getCurrentOrigin()
     return Origin.ALL[origin]
 end
 
----@param variantID number
+---@param variantID integer
 function pings.setVariant(variantID)
     local origin = Origin.current
-    local variant = origin.variants[origin:convertVariantID(variantID)]
+    if not origin or not origin.variants then return end
+    local variant = origin.variants[variantID]
 
     if origin.lastVariant then
         local last = origin.variants[origin.lastVariant]
         if last.parts then
-            for _, part in ipairs(last.parts) do
-                part:setVisible(false)
-            end
-        end
-        if last.textureParts then
-            for _, obj in ipairs(last.textureParts) do
+            for _, obj in ipairs(variant.parts) do
                 obj.part:setVisible(false)
             end
         end
     end
 
     if variant.parts then
-        for _, part in ipairs(variant.parts) do
-            part:setVisible(true)
-        end
-    end
-
-    if variant.textureParts then
-        for _, obj in ipairs(variant.textureParts) do
+        for _, obj in ipairs(variant.parts) do
             obj.part:setVisible(true)
-            obj.part:setPrimaryTexture("CUSTOM", obj.texture)
+            if obj.texture then
+                obj.part:setPrimaryTexture("CUSTOM", obj.texture)
+            end
         end
     end
 
-    origin.lastVariant = origin:convertVariantID(variantID)
+    origin.lastVariant = variantID
 end
 
 function events.entity_init()
@@ -307,7 +282,7 @@ function util.tick()
         origin:setEnabled(true)
 
         if origin.currentVariant then
-            pings.setVariant(origin:convertVariantID(origin.currentVariant)) ---@diagnostic disable-line: param-type-mismatch
+            pings.setVariant(origin.currentVariant) ---@diagnostic disable-line: param-type-mismatch
         end
     end
 

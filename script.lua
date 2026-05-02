@@ -56,7 +56,7 @@ function events.entity_init()
     local outline = name.OUTLINE_RGB
 
     if name.AUTO_OUTLINE then
-        outline = colorlib.lighten(name.RGB, -25)
+        outline = colorlib.lighten(name.RGB, name.AUTO_OUTLINE_OFFSET)
     end
     
     nameplate.ENTITY:setOutline(name.ENABLE_OUTLINE)
@@ -65,7 +65,7 @@ function events.entity_init()
     util.tick:register(function()
         plate.hoverEvent.contents = player:getName()
         nameplate.ALL:setText(toJson(plate))
-    end, 2400)
+    end, 1200)
 end
 
 ---@param hand Hand
@@ -107,4 +107,8 @@ function util.tick()
         crouchHandOffset(crouchHand)
         lastCrouchHand = crouchHand
     end
+end
+
+if host:isHost() and not host:isAvatarUploaded() then
+    log("Your avatar is not uploaded, meaning other players cannot see it!")
 end

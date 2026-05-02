@@ -12,8 +12,7 @@ local originsAPI = {}
 function originsAPI.hasOrigin(playr, origin, originLayer)
     local nbt = playr:getNbt()
     local origins = nbt.cardinal_components and nbt.cardinal_components["origins:origin"] and
-        nbt.cardinal_components["origins:origin"]
-        .OriginLayers --[[@as {Origin:string,Layer:string}[] ]]
+        nbt.cardinal_components["origins:origin"].OriginLayers --[[@as {Origin:string,Layer:string}[] ]]
     if not origins then return false end
     for _, _origin in ipairs(origins) do
         if _origin.Origin == origin and (_origin.Layer == originLayer or originLayer == nil) then
