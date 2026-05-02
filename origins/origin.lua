@@ -213,15 +213,16 @@ function Origin.new(id)
     return origin
 end
 
+---@param layer "origins:origin"|"origins_backgrounds:background"
 ---@return Origin?
-local function getCurrentOrigin()
+local function getCurrentOrigin(layer)
     local nbt = player:getNbt()
     local layers = nbt.cardinal_components
-        and nbt.cardinal_components["origins:origin"]
-        and nbt.cardinal_components["origins:origin"].OriginLayers
+        and nbt.cardinal_components[layer]
+        and nbt.cardinal_components[layer].OriginLayers
     local origin
     for _, v in ipairs(layers) do
-        if v.Layer == "origins:origin" then
+        if v.Layer == layer then
             origin = v.Origin
             break
         end
@@ -263,7 +264,7 @@ function events.entity_init()
 end
 
 function util.tick()
-    Origin.current = getCurrentOrigin()
+    Origin.current = getCurrentOrigin("origins:origin")
     local origin = Origin.current
 
     if not origin then
