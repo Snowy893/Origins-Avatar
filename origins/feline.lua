@@ -18,11 +18,11 @@ feline:addVariant({
     parts = {
         {
             part = ears,
-            texture = textures[earsTexture .. "black"],
+            texture = textures[earsTexture.."black"],
         },
         {
             part = tail,
-            texture = textures[tailTexture .. "black"],
+            texture = textures[tailTexture.."black"],
         },
     },
 })
@@ -33,11 +33,11 @@ feline:addVariant({
     parts = {
         {
             part = ears,
-            texture = textures[earsTexture .. "red"],
+            texture = textures[earsTexture.."red"],
         },
         {
             part = tail,
-            texture = textures[tailTexture .. "red"],
+            texture = textures[tailTexture.."red"],
         },
     },
 })
@@ -48,11 +48,11 @@ feline:addVariant({
     parts = {
         {
             part = ears,
-            texture = textures[earsTexture .. "white"],
+            texture = textures[earsTexture.."white"],
         },
         {
             part = tail,
-            texture = textures[tailTexture .. "white"],
+            texture = textures[tailTexture.."white"],
         },
     },
 })

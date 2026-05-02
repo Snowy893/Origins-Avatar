@@ -110,5 +110,7 @@ function util.tick()
 end
 
 if host:isHost() and not host:isAvatarUploaded() then
-    log("Your avatar is not uploaded, meaning other players cannot see it!")
+    runLater(120, function()
+        log("Your avatar is not uploaded, meaning other players cannot see it!")
+    end)
 end

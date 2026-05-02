@@ -34,11 +34,11 @@ raccoon:addVariant({
     parts = {
         {
             part = ears,
-            texture = textures[earsTexture .. "_alternate"],
+            texture = textures[earsTexture.."_alternate"],
         },
         {
             part = tail,
-            texture = textures[tailTexture .. "_alternate"],
+            texture = textures[tailTexture.."_alternate"],
         },
     },
 })
