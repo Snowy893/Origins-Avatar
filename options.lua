@@ -6,10 +6,11 @@ options.STRIDER = {}
 
 ---------------------------------------------------------------------------------
 
--- Set this to false if you want to use the skin texture in the blockbench model.
-options.USE_VANILLA_SKIN = true
+options.USE_VANILLA_SKIN = true -- Set this to false if you want to use the skin texture in the blockbench model.
 options.USE_VANILLA_CAPE_TEXTURE = true
 options.ENABLE_CAPE = false
+
+options.ENABLE_LOCAL_AVATAR_WARNING = true
 
 -- SLIME
 options.SLIME.ENABLE_WOBBLE = true

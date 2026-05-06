@@ -42,16 +42,10 @@ end
 function events.entity_init()
     if name.TEXT == "NAME HERE" then name.TEXT = "${name}" end
 
-    local plate = {
+    nameplate.ALL:setText(toJson {
         text = name.TEXT,
         color = "#"..vectors.rgbToHex(name.RGB / 255),
-        hoverEvent = {
-            action = "show_text",
-            contents = player:getName(),
-        },
-    }
-
-    nameplate.ALL:setText(toJson(plate))
+    })
 
     local outline = name.OUTLINE_RGB
 
@@ -61,56 +55,60 @@ function events.entity_init()
     
     nameplate.ENTITY:setOutline(name.ENABLE_OUTLINE)
     nameplate.ENTITY:setOutlineColor(outline / 255)
-
-    util.tick:register(function()
-        plate.hoverEvent.contents = player:getName()
-        nameplate.ALL:setText(toJson(plate))
-    end, 1200)
 end
 
 ---@param hand Hand
 local function crouchHandOffset(hand)
-    local rightRot = (hand and hand.RIGHT) and 20 or nil
-    local leftRot = (hand and hand.LEFT) and 20 or nil
+    local rightRot = hand.RIGHT and 20 or nil
+    local leftRot = hand.LEFT and 20 or nil
     vanilla_model.RIGHT_ARM:setOffsetRot(rightRot)
     vanilla_model.LEFT_ARM:setOffsetRot(leftRot)
 end
 
-local lastCrouchHand ---@type Hand?
+local lastCrouchHand = {} ---@type Hand
 function util.tick()
     local crouching = player:isCrouching()
     local useAction = player:getActiveItem():getUseAction()
     local leftHanded = player:isLeftHanded()
 
-    local crouchHand ---@type Hand?
-    local singleCrouchHand ---@type Hand?
-    local doubleCrouchhand ---@type Hand?
+    local crouchHand = {} ---@type Hand
 
     if crouching then
         if useAction == "BOW" then
-            doubleCrouchhand = { RIGHT = true, LEFT = true}
+            crouchHand.RIGHT = true
+            crouchHand.LEFT = true
         elseif util.compare(useAction, "TOOT_HORN", "SPEAR", "BLOCK") then
             local mainHandActive = player:getActiveHand() == "MAIN_HAND"
-            singleCrouchHand = mainHandActive ~= leftHanded and { RIGHT = true } or { LEFT = true }
+            if mainHandActive ~= leftHanded then
+                crouchHand.RIGHT = true
+            else
+                crouchHand.LEFT = true
+            end
         else
             local rightItem = player:getHeldItem(leftHanded)
             local leftItem = player:getHeldItem(not leftHanded)
             if util.crossbowCharged(rightItem) or util.crossbowCharged(leftItem) then
-                doubleCrouchhand = { RIGHT = true, LEFT = true }
+                crouchHand.RIGHT = true
+                crouchHand.LEFT = true
+            else
+                if rightItem.id == "originsumbrellas:umbrella" then
+                    crouchHand.RIGHT = true
+                end
+                if leftItem.id == "originsumbrellas:umbrella" then
+                    crouchHand.LEFT = true
+                end
             end
         end
     end
 
-    crouchHand = singleCrouchHand or doubleCrouchhand
-
-    if lastCrouchHand ~= crouchHand then
+    if lastCrouchHand.RIGHT ~= crouchHand.RIGHT or lastCrouchHand.LEFT ~= crouchHand.LEFT then
         crouchHandOffset(crouchHand)
         lastCrouchHand = crouchHand
     end
 end
 
-if host:isHost() and not host:isAvatarUploaded() then
-    runLater(120, function()
+if options.ENABLE_LOCAL_AVATAR_WARNING and host:isHost() and not host:isAvatarUploaded() then
+    runLater(300, function()
         log("Your avatar is not uploaded, meaning other players cannot see it!")
     end)
 end
