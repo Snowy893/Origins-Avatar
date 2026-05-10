@@ -36,6 +36,7 @@ if options.USE_VANILLA_CAPE_TEXTURE then
     end
 
     events.entity_init:register(updateCape)
+    runLater(60, updateCape)
     util.tick:register(updateCape, 600)
 end
 
@@ -64,13 +65,13 @@ function util.tick()
 
     local crouchHand = {} ---@type Hand
     local miniCrossbowHand = {} ---@type Hand
-    local rightArmRot = vec(0, 0, 0)
-    local leftArmRot = vec(0, 0, 0)
+    local rightArmRot = vectors.vec3(0, 0, 0)
+    local leftArmRot = vectors.vec3(0, 0, 0)
 
     if crouching and useAction == "BOW" then
         crouchHand.RIGHT = true
         crouchHand.LEFT = true
-    elseif crouching and util.compareany(useAction, "TOOT_HORN", "SPEAR", "BLOCK") then
+    elseif crouching and util.compare(useAction, "TOOT_HORN", "SPEAR", "BLOCK") then
         local mainHandActive = player:getActiveHand() == "MAIN_HAND"
         if mainHandActive ~= leftHanded then
             crouchHand.RIGHT = true
@@ -87,17 +88,11 @@ function util.tick()
                 miniCrossbowHand.RIGHT = true
                 miniCrossbowHand.LEFT = true
             end
-            if crouching then
-                crouchHand.RIGHT = true
-                crouchHand.LEFT = true
-            end
+            crouchHand.RIGHT = crouching
+            crouchHand.LEFT = crouching
         elseif crouching then
-            if rightItem.id == "originsumbrellas:umbrella" then
-                crouchHand.RIGHT = true
-            end
-            if leftItem.id == "originsumbrellas:umbrella" then
-                crouchHand.LEFT = true
-            end
+            crouchHand.RIGHT = rightItem.id == "originsumbrellas:umbrella"
+            crouchHand.LEFT = leftItem.id == "originsumbrellas:umbrella"
         end
     end
 

@@ -124,7 +124,7 @@ end
 ---@param value T
 ---@param ... T
 ---@return T?
-function util.compareany(value, ...)
+function util.compare(value, ...)
     for _, v in ipairs({ ... }) do
         if v == value then return value end
     end
