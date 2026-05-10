@@ -8,7 +8,7 @@ if options.ENABLE_SHIVER then
     local timer = 1
     function strider.tick()
         local temperature = world.getBiome(player:getPos()):getTemperature()
-        if not player:isOnFire() and temperature < 0.8 then
+        if not player:isOnFire() and temperature < 0.6 then
             timer = timer + 1
             if timer > 41 then
                 timer = 1
