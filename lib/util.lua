@@ -102,7 +102,7 @@ if not toboolean then
     ---@return boolean
     ---@nodiscard
     function toboolean(value)
-        return value and true or false
+        return not not value
     end
 end
 

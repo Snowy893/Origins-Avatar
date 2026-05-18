@@ -40,11 +40,9 @@ if options.USE_VANILLA_CAPE_TEXTURE then
     util.tick:register(updateCape, 600)
 end
 
-function events.entity_init()
-    if name.TEXT == "NAME HERE" then name.TEXT = "${name}" end
-
+do
     nameplate.ALL:setText(toJson {
-        text = name.TEXT,
+        text = name.TEXT == "NAME HERE" and "${name}" or name.TEXT,
         color = "#"..vectors.rgbToHex(name.RGB / 255),
     })
 
@@ -53,7 +51,7 @@ function events.entity_init()
     if name.AUTO_OUTLINE then
         outline = colorlib.lighten(name.RGB, name.AUTO_OUTLINE_OFFSET)
     end
-    
+
     nameplate.ENTITY:setOutline(name.ENABLE_OUTLINE)
     nameplate.ENTITY:setOutlineColor(outline / 255)
 end
