@@ -9,6 +9,11 @@
         "url": ".vscode/avatar.schema.json"
       }
     ],
-    "figura.librariesFolderPath": "C:\\Users\\snowy\\AppData\\Roaming\\.minecraft\\figura\\avatars\\libraries\\"
+    "figura.librariesFolderPath": "/run/media/snowie/69578ab0-7304-4841-92aa-b41066e05e0c/GitHub/Figura/avatars/libraries/"
+  },
+  "extensions": {
+    "recommendations": [
+      "manuel-underscore.figura"
+    ]
   }
 }

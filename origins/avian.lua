@@ -47,7 +47,7 @@ util.tick:register(function()
 
     local pos = player:getPos()
     local fallSpeed = player:getVelocity().y
-    local inAir = world.getBlockState(pos.x, pos.y - 0.01, pos.z):isAir()
+    local inAir = not world.getBlockState(pos.x, pos.y - 0.01, pos.z):hasCollision()
 
     if fallSpeed > 0 then fallSpeed = 0 end
 
